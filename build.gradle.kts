@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.3.61"
     application
     id("org.openjfx.javafxplugin") version "0.0.8"
-    id("org.beryx.jlink") version "2.4.3"
+    id("org.beryx.jlink") version "2.17.1"
 }
 
 group = "com.geowarin"
