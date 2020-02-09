@@ -13,5 +13,6 @@ module gw.modmanager {
     // for ssl. to get the db file
     requires jdk.crypto.ec;
 
+    opens com.geowarin.modmanager.gui to tornadofx;
     exports com.geowarin.modmanager;
 }
