@@ -3,6 +3,7 @@ package com.geowarin.modmanager
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.loadMods
 import com.geowarin.modmanager.mod.parseModsConfig
+import javafx.scene.control.TableView
 import javafx.scene.paint.Color
 import tornadofx.*
 import tornadofx.Dimension.LinearUnits.px
@@ -63,6 +64,10 @@ class ModsListEvent(val mods: List<Mod>, val activeMods: List<Mod>) : FXEvent()
 
 
 class MyView : View("GW Mod manager") {
+  init {
+    find(MyController::class)
+  }
+
   override val root = vbox {
     button("Load mods") {
       addClass(MyStyle.tackyButton)
@@ -93,7 +98,6 @@ class MyView : View("GW Mod manager") {
 }
 
 fun main(args: Array<String>) {
-  val myController = MyController()
   launch<MyApp>(args)
 }
 
