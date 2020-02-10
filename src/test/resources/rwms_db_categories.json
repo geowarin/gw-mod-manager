@@ -1,0 +1,190 @@
+{
+ "ai": [
+  170.0,
+  "colonist behaviour"
+ ],
+ "ai_animal": [
+  210.0,
+  "animal behaviour mods"
+ ],
+ "animal": [
+  200.0,
+  "animals"
+ ],
+ "animal_pre_patch": [
+  199.0,
+  "animal pre-patch"
+ ],
+ "annoyance": [
+  500.0,
+  "annoyances"
+ ],
+ "appearance": [
+  150.0,
+  "colonist appearance"
+ ],
+ "biome": [
+  40.0,
+  "biomes"
+ ],
+ "caravan": [
+  310.0,
+  "caravan stuff"
+ ],
+ "clothing": [
+  140.0,
+  "clothing stuff"
+ ],
+ "combat": [
+  250.0,
+  "general combat mods"
+ ],
+ "combat_addon": [
+  270.0,
+  "combat addons"
+ ],
+ "core": [
+  2.0,
+  "Core"
+ ],
+ "energy": [
+  90.0,
+  "energy mods"
+ ],
+ "faction": [
+  400.0,
+  "Faction Stuff"
+ ],
+ "food": [
+  110.0,
+  "foodstuff"
+ ],
+ "framework": [
+  8.0,
+  "Frameworks"
+ ],
+ "furniture": [
+  80.0,
+  "furniture"
+ ],
+ "gameplay": [
+  10.0,
+  "Gameplay"
+ ],
+ "gameplay_addon": [
+  15.0,
+  "Gameplay addon"
+ ],
+ "hugslib": [
+  5.0,
+  "hugslib"
+ ],
+ "item": [
+  120.0,
+  "general items and stuff"
+ ],
+ "joy": [
+  125.0,
+  "joy items"
+ ],
+ "libs": [
+  6.0,
+  "Core Libs"
+ ],
+ "light": [
+  85.0,
+  "light mods"
+ ],
+ "load_first_mod": [
+  4.0,
+  "load first mods"
+ ],
+ "load_last_mod": [
+  9999.0,
+  "Load Last Mods"
+ ],
+ "load_really_first_mod": [
+  1.0,
+  "load REALLY first mods"
+ ],
+ "medicine": [
+  100.0,
+  "medicine"
+ ],
+ "music": [
+  620.0,
+  "Music / Soundtrack mods"
+ ],
+ "patch": [
+  520.0,
+  "patches and fixes"
+ ],
+ "prisoner": [
+  180.0,
+  "prisoners and slavery"
+ ],
+ "production": [
+  65.0,
+  "production mods"
+ ],
+ "race": [
+  50.0,
+  "races"
+ ],
+ "resource": [
+  60.0,
+  "resources"
+ ],
+ "scenario": [
+  30.0,
+  "scenario"
+ ],
+ "skill": [
+  160.0,
+  "colonist skills"
+ ],
+ "statue": [
+  130.0,
+  "statues"
+ ],
+ "storyteller": [
+  410.0,
+  "Storyteller"
+ ],
+ "structure": [
+  70.0,
+  "structure"
+ ],
+ "temperature": [
+  45.0,
+  "temperature"
+ ],
+ "texture": [
+  700.0,
+  "graphic overhaul / textures"
+ ],
+ "total_conversion": [
+  20.0,
+  "conversions "
+ ],
+ "trading": [
+  300.0,
+  "trading stuff"
+ ],
+ "translation": [
+  510.0,
+  "translations"
+ ],
+ "ui": [
+  600.0,
+  "User Interface"
+ ],
+ "ui_addon": [
+  610.0,
+  "User Interface Mods, Addons"
+ ],
+ "weapon": [
+  260.0,
+  "weapons"
+ ]
+}

@@ -30,7 +30,8 @@ class MyView : View("GW Mod manager") {
     hbox {
       tableview<Mod> {
         readonlyColumn("Name", Mod::cleanModName)
-        readonlyColumn("Category", Mod::category)
+        readonlyColumn("Category", Mod::categoryName)
+        readonlyColumn("Priority", Mod::priority)
 
         hgrow = Priority.ALWAYS
         subscribe<ModsListEvent> { event ->
@@ -42,7 +43,8 @@ class MyView : View("GW Mod manager") {
       }
       tableview<Mod> {
         readonlyColumn("Name", Mod::cleanModName)
-        readonlyColumn("Category", Mod::category)
+        readonlyColumn("Category", Mod::categoryName)
+        readonlyColumn("Priority", Mod::priority)
 
         hgrow = Priority.ALWAYS
         subscribe<ModsListEvent> { event ->

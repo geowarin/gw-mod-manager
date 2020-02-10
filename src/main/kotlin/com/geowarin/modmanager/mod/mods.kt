@@ -1,17 +1,26 @@
 package com.geowarin.modmanager.mod
 
-import com.geowarin.modmanager.loadDb
+import com.geowarin.modmanager.Category
 import java.io.File
 
 data class Mod(
   val root: File,
   val cleanModName: String,
-  val category: String
-)
+  val metaData: ModMetaData,
+  val category: Category
+) {
+  val categoryName
+    get() = category.fullName
 
-fun loadMods(modsDir: String): List<Mod> {
-  val db = loadDb()
+  val priority
+    get() = category.prority
+}
 
+fun loadMods(
+  modsDir: String,
+  db: Map<String, Any?> = mapOf(),
+  categories: Map<String, Category>
+): List<Mod> {
   val modDirs = File(modsDir).listFiles()?.toList() ?: emptyList()
   return modDirs.map {
     val metadata = parseMetadata(it)
@@ -19,8 +28,9 @@ fun loadMods(modsDir: String): List<Mod> {
       null
     else {
       val cleanModName = cleanModName(metadata.name)
-      val category = db[cleanModName] as String? ?: "Unknown"
-      Mod(it, cleanModName, category)
+      val categoryTag = db[cleanModName] as String? ?: "unknown"
+      val category = categories[categoryTag] ?: Category(999.0, "Unknown")
+      Mod(it, cleanModName, metadata, category)
     }
   }.filterNotNull()
 }
