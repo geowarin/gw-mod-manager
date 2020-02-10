@@ -27,27 +27,29 @@ class ToolbarView : View() {
 
 typealias ModListSelector = (ModsListEvent) -> List<Mod>
 
+class ModListStrategy(
+  val title: String,
+  val modListSelector: ModListSelector
+)
+
+
 class ModListView : Fragment() {
   //  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
 //  val search = SimpleStringProperty().onChange { srch ->
 //    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
 //  }
-  val modListSelector: ModListSelector by param()
+  val modListStrategy: ModListStrategy by param()
 
-  override val root = anchorpane {
-    //    textfield(search)
+  override val root = borderpane {
+    fitToParentWidth()
+    top = label(modListStrategy.title)
     val tableview = tableview<Mod> {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
       readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true)
       readonlyColumn("Priority", Mod::priority).weightedWidth(10, minContentWidth = true)
 
-      anchorpaneConstraints {
-        topAnchor = 0.0
-        bottomAnchor = 0.0
-      }
-      fitToParentWidth()
       subscribe<ModsListEvent> { event ->
-        items.setAll(modListSelector(event))
+        items.setAll(modListStrategy.modListSelector(event))
         requestResize()
       }
       contextmenu {
@@ -74,6 +76,7 @@ class ModListView : Fragment() {
     tableview.onDoubleClick {
       println("double")
     }
+    center = tableview
   }
 }
 
@@ -117,15 +120,21 @@ class MyView : View("GW Mod manager") {
     fire(ModsListRequest)
   }
 
-  val currentModList = find(ModListView::class, mapOf(ModListView::modListSelector to { e: ModsListEvent -> e.mods }))
-  val selectedModList = find(ModListView::class, mapOf(ModListView::modListSelector to { e: ModsListEvent -> e.activeMods }))
+  val inactiveModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
+    title = "Inactive mods",
+    modListSelector = { e: ModsListEvent -> e.inactiveMods }
+  )))
+  val activeModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
+    title = "Active mods",
+    modListSelector = { e: ModsListEvent -> e.activeMods }
+  )))
 
   override val root =
     borderpane {
       top = find(ToolbarView::class).root
       center = splitpane {
-        add(currentModList)
-        add(selectedModList)
+        add(inactiveModList)
+        add(activeModList)
       }
       bottom = find(DescriptionView::class).root
     }

@@ -12,12 +12,12 @@ class ModController : Controller() {
       val db = database.load()
       val categories = categories.load()
 
-      val mods = loadMods(MacPaths.steamModsFolder, db, categories)
+      val allMods = loadMods(MacPaths.steamModsFolder, db, categories)
 
       val modsConfig = parseModsConfig(MacPaths.configFolder)
-      val activeMods = mods.filter { modsConfig.activeMods.contains(it.baseDir.name) }
+      val (activeMods, inactiveMods) = allMods.partition { modsConfig.activeMods.contains(it.baseDir.name) }
 
-      fire(ModsListEvent(mods, activeMods))
+      fire(ModsListEvent(inactiveMods, activeMods))
     }
     subscribe<SelectedModChangedRequest> {
       if (it.mod != null) {

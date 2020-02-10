@@ -4,4 +4,4 @@ import com.geowarin.modmanager.mod.Mod
 import tornadofx.*
 
 object ModsListRequest : FXEvent(EventBus.RunOn.BackgroundThread)
-class ModsListEvent(val mods: List<Mod>, val activeMods: List<Mod>) : FXEvent()
+class ModsListEvent(val inactiveMods: List<Mod>, val activeMods: List<Mod>) : FXEvent()
