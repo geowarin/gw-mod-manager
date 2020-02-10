@@ -9,52 +9,49 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
+import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
 import javafx.scene.layout.Priority
 import tornadofx.*
 import java.awt.Desktop
 import java.net.URI
+import javax.swing.text.TableView
 
-
-class MyApp : App(MyView::class, AppStyle::class) {
-  init {
-    reloadStylesheetsOnFocus()
-//    reloadViewsOnFocus()
-  }
-}
+class MyApp : App(MyView::class, AppStyle::class)
 
 class SelectedModChangedRequest(val mod: Mod?) : FXEvent(EventBus.RunOn.BackgroundThread)
 class SelectedModChangedEvent(val description: String, val imageUrl: String) : FXEvent()
 
 class ToolbarView : View() {
-  override val root = hbox {
-    button("Load mods") {
-      addClass(AppStyle.tackyButton)
-    }.action {
-      fire(ModsListRequest)
+  override val root = menubar {
+    menu("File") {
+
     }
   }
 }
 
 class ModListView : View() {
-  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
-  val search = SimpleStringProperty().onChange { srch ->
-    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
-  }
+//  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
+//  val search = SimpleStringProperty().onChange { srch ->
+//    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
+//  }
 
-  override val root = vbox {
-    textfield(search)
-    tableview<Mod>(mods) {
-      readonlyColumn("Name", Mod::cleanModName)
-      readonlyColumn("Category", Mod::categoryName)
-      readonlyColumn("Priority", Mod::priority)
+  override val root = anchorpane {
+//    textfield(search)
+    val tableview = tableview<Mod> {
+      readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
+      readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true)
+      readonlyColumn("Priority", Mod::priority).weightedWidth(10, minContentWidth = true)
 
-      hgrow = Priority.ALWAYS
+      anchorpaneConstraints {
+        topAnchor = 0.0
+        bottomAnchor = 0.0
+      }
+      fitToParentWidth()
       subscribe<ModsListEvent> { event ->
-        val source: ObservableList<Mod> = mods.source as ObservableList<Mod>
-        source.setAll(event.mods)
-
+        items.setAll(event.mods)
+        requestResize()
       }
       contextmenu {
         item("Browse on steam").action {
@@ -67,8 +64,17 @@ class ModListView : View() {
           selectedItem?.apply { Desktop.getDesktop().open(baseDir) }
         }
       }
-    }.onSelectionChange { mod ->
+    }
+    tableview.onSelectionChange { mod ->
       fire(SelectedModChangedRequest(mod))
+    }
+    tableview.setOnKeyPressed { e ->
+      if (e.code == KeyCode.ENTER) {
+        println("enter")
+      }
+    }
+    tableview.onDoubleClick {
+      println("double")
     }
   }
 }
@@ -82,6 +88,7 @@ fun openInBrowser(address: String) {
 class DescriptionView : View() {
   override val root =
     vbox {
+      useMaxWidth = true
       pane {
         setPrefSize(200.0, 200.0)
         subscribe<SelectedModChangedEvent> { e ->
@@ -95,7 +102,7 @@ class DescriptionView : View() {
       webview {
         prefHeight = 200.0
         subscribe<SelectedModChangedEvent> {
-          engine.loadContent("<div style='white-space: pre;'>${it.description}</div>")
+          engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${it.description}</div>")
         }
       }
     }
@@ -104,31 +111,19 @@ class DescriptionView : View() {
 class MyView : View("GW Mod manager") {
   init {
     find(ModController::class)
+    // for dev only
+    fire(ModsListRequest)
   }
 
   override fun onBeforeShow() {
     fire(ModsListRequest)
   }
 
-  val toolbarView = find(ToolbarView::class)
-  val modListView = find(ModListView::class)
-  val descriptionView = find(DescriptionView::class)
-
   override val root =
-    gridpane {
-      fitToParentWidth()
-      row {
-        add(toolbarView)
-      }
-      row {
-        add(modListView)
-      }
-      row {
-        add(descriptionView)
-        gridpaneConstraints {
-          fillWidth = true
-        }
-      }
+    borderpane {
+      top = find(ToolbarView::class).root
+      center = find(ModListView::class).root
+      bottom = find(DescriptionView::class).root
     }
 }
 

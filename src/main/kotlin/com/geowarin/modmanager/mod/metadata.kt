@@ -7,10 +7,10 @@ import com.gitlab.mvysny.konsumexml.konsumeXml
 import java.io.File
 
 data class ModMetaData(
-  val name: String,
-  val author: String,
-  val description: String,
-  val url: String
+  val name: String = "",
+  val author: String = "",
+  val description: String = "",
+  val url: String = ""
 ) {
   companion object {
     fun xml(k: Konsumer): ModMetaData {
