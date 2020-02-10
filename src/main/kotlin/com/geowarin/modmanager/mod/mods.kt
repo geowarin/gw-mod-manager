@@ -4,10 +4,10 @@ import com.geowarin.modmanager.Category
 import java.io.File
 
 data class Mod(
-  val baseDir: File,
+  val baseDir: File = File(""),
   val cleanModName: String,
-  val metaData: ModMetaData,
-  val category: Category
+  val metaData: ModMetaData = ModMetaData(),
+  val category: Category = Category(999.0, "Unknown")
 ) {
   val categoryName
     get() = category.fullName

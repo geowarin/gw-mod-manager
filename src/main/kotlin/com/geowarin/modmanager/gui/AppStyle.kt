@@ -6,12 +6,7 @@ import tornadofx.*
 class AppStyle : Stylesheet() {
 
   companion object {
-    val tackyButton by cssclass()
-
-    private val topColor = Color.RED
-    private val rightColor = Color.DARKGREEN
-    private val leftColor = Color.ORANGE
-    private val bottomColor = Color.PURPLE
+    val fail by cssclass()
   }
 
   init {
@@ -21,9 +16,11 @@ class AppStyle : Stylesheet() {
       prefHeight = 1000.px
     }
 
-    tackyButton {
-      borderColor += box(topColor, rightColor, bottomColor, leftColor)
-      fontSize = 20.px
+    fail{
+      backgroundColor += c("#FF5722", .5)
+      and(selected){
+        backgroundColor += c("#0096C9", .5)
+      }
     }
   }
 }

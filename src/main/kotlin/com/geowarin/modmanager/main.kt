@@ -1,21 +1,18 @@
 package com.geowarin.modmanager
 
-import com.geowarin.modmanager.gui.AppStyle
-import com.geowarin.modmanager.gui.ModController
-import com.geowarin.modmanager.gui.ModsListEvent
-import com.geowarin.modmanager.gui.ModsListRequest
+import com.geowarin.modmanager.gui.*
+import com.geowarin.modmanager.gui.AppStyle.Companion.fail
 import com.geowarin.modmanager.mod.Mod
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
+import javafx.scene.paint.Color.BLACK
+import javafx.scene.paint.Color.RED
 import tornadofx.*
 import java.awt.Desktop
 import java.net.URI
 
 class MyApp : App(MyView::class, AppStyle::class)
-
-class SelectedModChangedRequest(val mod: Mod?) : FXEvent(EventBus.RunOn.BackgroundThread)
-class SelectedModChangedEvent(val description: String, val imageUrl: String) : FXEvent()
 
 class ToolbarView : View() {
   override val root = menubar {
@@ -25,11 +22,13 @@ class ToolbarView : View() {
   }
 }
 
-typealias ModListSelector = (ModsListEvent) -> List<Mod>
+typealias ModListSelector = (ModsListResponse) -> List<Mod>
+typealias ModAction = (Mod) -> Unit
 
 class ModListStrategy(
   val title: String,
-  val modListSelector: ModListSelector
+  val modListSelector: ModListSelector,
+  val modAction: ModAction
 )
 
 
@@ -45,10 +44,13 @@ class ModListView : Fragment() {
     top = label(modListStrategy.title)
     val tableview = tableview<Mod> {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
-      readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true)
+      readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true).cellFormat { priority ->
+        text = priority
+        style { textFill = if (priority == "Unknown") RED else BLACK }
+      }
       readonlyColumn("Priority", Mod::priority).weightedWidth(10, minContentWidth = true)
 
-      subscribe<ModsListEvent> { event ->
+      subscribe<ModsListResponse> { event ->
         items.setAll(modListStrategy.modListSelector(event))
         requestResize()
       }
@@ -69,12 +71,11 @@ class ModListView : Fragment() {
     }
     tableview.setOnKeyPressed { e ->
       if (e.code == KeyCode.ENTER) {
-        println("enter")
-        println(params)
+        tableview.selectedItem?.apply { modListStrategy.modAction(this) }
       }
     }
     tableview.onDoubleClick {
-      println("double")
+      tableview.selectedItem?.apply { modListStrategy.modAction(this) }
     }
     center = tableview
   }
@@ -92,7 +93,7 @@ class DescriptionView : View() {
       useMaxWidth = true
       pane {
         setPrefSize(200.0, 200.0)
-        subscribe<SelectedModChangedEvent> { e ->
+        subscribe<SelectedModChangedResponse> { e ->
           style {
             backgroundImage += URI(e.imageUrl)
             backgroundSize = multi(BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false))
@@ -102,7 +103,7 @@ class DescriptionView : View() {
       }
       webview {
         prefHeight = 200.0
-        subscribe<SelectedModChangedEvent> {
+        subscribe<SelectedModChangedResponse> {
           engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${it.description}</div>")
         }
       }
@@ -113,20 +114,26 @@ class MyView : View("GW Mod manager") {
   init {
     find(ModController::class)
     // for dev only
-    fire(ModsListRequest)
+    fire(ModsLoadRequest)
   }
 
   override fun onBeforeShow() {
-    fire(ModsListRequest)
+    fire(ModsLoadRequest)
   }
 
   val inactiveModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
     title = "Inactive mods",
-    modListSelector = { e: ModsListEvent -> e.inactiveMods }
+    modListSelector = { e -> e.inactiveMods },
+    modAction = { mod ->
+      fire(ModActivationRequest(mod))
+    }
   )))
   val activeModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
     title = "Active mods",
-    modListSelector = { e: ModsListEvent -> e.activeMods }
+    modListSelector = { e -> e.activeMods },
+    modAction = { mod ->
+      fire(ModDeactivationRequest(mod))
+    }
   )))
 
   override val root =
