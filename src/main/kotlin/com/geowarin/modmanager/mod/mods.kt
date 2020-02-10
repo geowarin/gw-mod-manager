@@ -4,7 +4,7 @@ import com.geowarin.modmanager.Category
 import java.io.File
 
 data class Mod(
-  val root: File,
+  val baseDir: File,
   val cleanModName: String,
   val metaData: ModMetaData,
   val category: Category
@@ -14,6 +14,9 @@ data class Mod(
 
   val priority
     get() = category.prority
+
+  val steamId
+    get() = baseDir.name
 }
 
 fun loadMods(
@@ -22,17 +25,17 @@ fun loadMods(
   categories: Map<String, Category>
 ): List<Mod> {
   val modDirs = File(modsDir).listFiles()?.toList() ?: emptyList()
-  return modDirs.map {
-    val metadata = parseMetadata(it)
+  return modDirs.mapNotNull { baseDir: File ->
+    val metadata = parseMetadata(baseDir)
     if (metadata == null)
       null
     else {
       val cleanModName = cleanModName(metadata.name)
       val categoryTag = db[cleanModName] as String? ?: "unknown"
       val category = categories[categoryTag] ?: Category(999.0, "Unknown")
-      Mod(it, cleanModName, metadata, category)
+      Mod(baseDir, cleanModName, metadata, category)
     }
-  }.filterNotNull()
+  }
 }
 
 

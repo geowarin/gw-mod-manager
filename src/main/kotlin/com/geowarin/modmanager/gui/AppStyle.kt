@@ -17,8 +17,8 @@ class AppStyle : Stylesheet() {
   init {
     root {
       fontFamily = "Verdana"
-      prefHeight = 720.px
       prefWidth = 1200.px
+      prefHeight = 800.px
     }
 
     tackyButton {

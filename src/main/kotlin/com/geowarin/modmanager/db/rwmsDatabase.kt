@@ -51,7 +51,7 @@ fun dbLoader(reader: Reader): Map<String, String> {
 fun <T> CachedResource<T>.load(): T {
   val cachedDb = File(getCacheDir(), this.fileName)
   if (cachedDb.exists()) {
-    println("Loaded $this from cache")
+    println("Loading ${this.fileName} from cache")
     return justLoad(cachedDb.toURI().toURL())
   }
   return downloadAndParse()

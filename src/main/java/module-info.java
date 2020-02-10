@@ -9,6 +9,7 @@ module gw.modmanager {
 
     requires javafx.controls;
     requires javafx.graphics;
+    requires java.desktop;
 
     // for ssl. to get the db file
     requires jdk.crypto.ec;
