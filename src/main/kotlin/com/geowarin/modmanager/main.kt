@@ -5,18 +5,12 @@ import com.geowarin.modmanager.gui.ModController
 import com.geowarin.modmanager.gui.ModsListEvent
 import com.geowarin.modmanager.gui.ModsListRequest
 import com.geowarin.modmanager.mod.Mod
-import javafx.beans.property.SimpleStringProperty
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
-import javafx.collections.transformation.FilteredList
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
-import javafx.scene.layout.Priority
 import tornadofx.*
 import java.awt.Desktop
 import java.net.URI
-import javax.swing.text.TableView
 
 class MyApp : App(MyView::class, AppStyle::class)
 
@@ -31,14 +25,17 @@ class ToolbarView : View() {
   }
 }
 
-class ModListView : View() {
-//  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
+typealias ModListSelector = (ModsListEvent) -> List<Mod>
+
+class ModListView : Fragment() {
+  //  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
 //  val search = SimpleStringProperty().onChange { srch ->
 //    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
 //  }
+  val modListSelector: ModListSelector by param()
 
   override val root = anchorpane {
-//    textfield(search)
+    //    textfield(search)
     val tableview = tableview<Mod> {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
       readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true)
@@ -50,7 +47,7 @@ class ModListView : View() {
       }
       fitToParentWidth()
       subscribe<ModsListEvent> { event ->
-        items.setAll(event.mods)
+        items.setAll(modListSelector(event))
         requestResize()
       }
       contextmenu {
@@ -71,6 +68,7 @@ class ModListView : View() {
     tableview.setOnKeyPressed { e ->
       if (e.code == KeyCode.ENTER) {
         println("enter")
+        println(params)
       }
     }
     tableview.onDoubleClick {
@@ -119,10 +117,16 @@ class MyView : View("GW Mod manager") {
     fire(ModsListRequest)
   }
 
+  val currentModList = find(ModListView::class, mapOf(ModListView::modListSelector to { e: ModsListEvent -> e.mods }))
+  val selectedModList = find(ModListView::class, mapOf(ModListView::modListSelector to { e: ModsListEvent -> e.activeMods }))
+
   override val root =
     borderpane {
       top = find(ToolbarView::class).root
-      center = find(ModListView::class).root
+      center = splitpane {
+        add(currentModList)
+        add(selectedModList)
+      }
       bottom = find(DescriptionView::class).root
     }
 }
