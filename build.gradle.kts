@@ -52,7 +52,7 @@ tasks.withType<Test> {
 
 javafx {
     version = "13"
-    modules("javafx.base", "javafx.graphics", "javafx.controls")
+    modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.web")
 }
 
 jlink {

@@ -9,7 +9,8 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
-import javafx.scene.image.Image
+import javafx.scene.layout.BackgroundRepeat
+import javafx.scene.layout.BackgroundSize
 import javafx.scene.layout.Priority
 import tornadofx.*
 import java.awt.Desktop
@@ -62,6 +63,9 @@ class ModListView : View() {
         item("Browse mod url").action {
           selectedItem?.apply { openInBrowser(metaData.url) }
         }
+        item("Open in explorer").action {
+          selectedItem?.apply { Desktop.getDesktop().open(baseDir) }
+        }
       }
     }.onSelectionChange { mod ->
       fire(SelectedModChangedRequest(mod))
@@ -78,18 +82,20 @@ fun openInBrowser(address: String) {
 class DescriptionView : View() {
   override val root =
     vbox {
-      imageview {
-        preserveRatioProperty().set(true)
-        setMaxSize(200.0, 200.0)
-//        setPrefSize(200.0, 200.0)
-        subscribe<SelectedModChangedEvent> {
-          image = Image(it.imageUrl)
+      pane {
+        setPrefSize(200.0, 200.0)
+        subscribe<SelectedModChangedEvent> { e ->
+          style {
+            backgroundImage += URI(e.imageUrl)
+            backgroundSize = multi(BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false))
+            backgroundRepeat = multi(BackgroundRepeat.NO_REPEAT to BackgroundRepeat.NO_REPEAT)
+          }
         }
       }
-      textarea {
-        useMaxWidth = true
+      webview {
+        prefHeight = 200.0
         subscribe<SelectedModChangedEvent> {
-          text = it.description
+          engine.loadContent("<div style='white-space: pre;'>${it.description}</div>")
         }
       }
     }
@@ -108,14 +114,22 @@ class MyView : View("GW Mod manager") {
   val modListView = find(ModListView::class)
   val descriptionView = find(DescriptionView::class)
 
-  override val root = vbox {
-
-    borderpane {
-      top = toolbarView.root
-      center = modListView.root
-      bottom = descriptionView.root
+  override val root =
+    gridpane {
+      fitToParentWidth()
+      row {
+        add(toolbarView)
+      }
+      row {
+        add(modListView)
+      }
+      row {
+        add(descriptionView)
+        gridpaneConstraints {
+          fillWidth = true
+        }
+      }
     }
-  }
 }
 
 fun main(args: Array<String>) {
