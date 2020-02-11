@@ -34,7 +34,11 @@ class ModController : ItemViewModel<Mod>() {
       originalMods += modsConfig.activeMods
 
       activeMods += modsConfig.activeMods.map { activeModId ->
-        allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: Mod(cleanModName = activeModId, status = ACTIVE, modType = LOCAL_MOD)
+        allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: Mod(
+          cleanModName = activeModId,
+          status = ACTIVE,
+          modType = LOCAL_MOD
+        )
       }
       inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
     }

@@ -15,7 +15,8 @@ data class Mod(
   val modType: ModType,
   val baseDir: File? = null,
   val metaData: ModMetaData? = null,
-  val category: Category? = null
+  val category: Category? = null,
+  val manifest: ModManifest? = null
 ) {
   val categoryName: String
     get() = category?.fullName ?: "Unknown"
@@ -81,6 +82,7 @@ fun loadMods(
     if (metadata == null)
       null
     else {
+      val manifest = parseManifest(baseDir)
       val cleanModName = cleanModName(metadata.name)
       val categoryTag = db[cleanModName] as String? ?: "unknown"
       val category = categories[categoryTag] ?: Category(999.0, "Not found")
@@ -89,7 +91,8 @@ fun loadMods(
         baseDir = baseDir,
         metaData = metadata,
         category = category,
-        modType = modType
+        modType = modType,
+        manifest = manifest
       )
     }
   }
