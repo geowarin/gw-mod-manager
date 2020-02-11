@@ -1,7 +1,6 @@
 package com.geowarin.modmanager
 
 import com.geowarin.modmanager.gui.AppStyle
-import javafx.collections.ObservableList
 import javafx.event.Event
 import javafx.scene.control.TableRow
 import javafx.scene.input.ClipboardContent
@@ -9,7 +8,10 @@ import javafx.scene.input.DragEvent
 import javafx.scene.input.TransferMode
 import tornadofx.*
 
-fun <T> TableRow<T>.enableDnDReordering(rowIdProvider: (T) -> String) {
+fun <T> TableRow<T>.enableDnDReordering(
+  rowIdProvider: (T) -> String,
+  updater: (T, List<T>) -> T = { t, _ -> t}
+) {
   val thisRow: TableRow<T> = this
 
   fun acceptDrop(event: DragEvent): Boolean {
@@ -52,14 +54,16 @@ fun <T> TableRow<T>.enableDnDReordering(rowIdProvider: (T) -> String) {
       val db = event.dragboard
       var success = false
       if (db.hasString()) {
-        val items: ObservableList<T> = tableView.items
+        val newItems: ArrayList<T> = ArrayList(tableView.items)
 
-        val draggedIdx = items.indexOfFirst { rowIdProvider(it) == db.string }
-        val targetIdx = items.indexOf(item)
+        val draggedIdx = newItems.indexOfFirst { rowIdProvider(it) == db.string }
+        val targetIdx = newItems.indexOf(item)
 
-        val draggedItem = items.removeAt(draggedIdx)
+        val draggedItem = newItems.removeAt(draggedIdx)
         val realTarget = if (targetIdx < draggedIdx) targetIdx + 1 else targetIdx
-        items.add(realTarget, draggedItem)
+        newItems.add(realTarget, draggedItem)
+
+        tableView.items.setAll(newItems.map{ updater(it, newItems)} )
 
         tableView.selectionModel.select(realTarget)
 

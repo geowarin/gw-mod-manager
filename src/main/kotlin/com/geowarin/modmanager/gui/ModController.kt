@@ -43,8 +43,19 @@ class ModController : ItemViewModel<Mod>() {
   fun activateMod(mod: Mod) {
     inactiveMods -= mod
 
-    val newStatus = if (originalMods.contains(mod.modId)) ACTIVE else ADDED_TO_MODLIST
-    activeMods += mod.copy(status = newStatus)
+    activeMods += recomputeModStatus(mod, activeMods)
+  }
+
+  fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
+    val originalIndex = originalMods.indexOf(mod.modId)
+    val newIndex = activeMods.filter { it.status != ADDED_TO_MODLIST }.indexOfFirst { it.modId == mod.modId }
+    val newStatus = when {
+      originalIndex == -1 -> ADDED_TO_MODLIST
+      originalIndex == newIndex -> ACTIVE
+      originalIndex > newIndex -> ACTIVE_MOVED_UP
+      else -> ACTIVE_MOVED_DOWN
+    }
+    return mod.copy(status = newStatus)
   }
 
   fun deactivateMod(mod: Mod) {

@@ -32,7 +32,8 @@ typealias ModAction = (Mod) -> Unit
 class ModListStrategy(
   val title: String,
   val modList: ObservableList<Mod>,
-  val modAction: ModAction
+  val modAction: ModAction,
+  val canReorder: Boolean
 )
 
 
@@ -63,7 +64,12 @@ class ModListFragment : Fragment() {
             this.toggleClass(AppStyle.added, item?.status == ADDED_TO_MODLIST)
           }
         }
-        tableRow.enableDnDReordering(rowIdProvider = Mod::modId)
+        if (modListStrategy.canReorder) {
+          tableRow.enableDnDReordering(
+            rowIdProvider = Mod::modId,
+            updater = modController::recomputeModStatus
+          )
+        }
         tableRow
       }
       bindSelected(modController)
@@ -159,7 +165,8 @@ class MyView : View("GW Mod manager") {
       ModListFragment::modListStrategy to ModListStrategy(
         title = "Inactive mods",
         modList = modController.inactiveMods,
-        modAction = modController::activateMod
+        modAction = modController::activateMod,
+        canReorder = false
       )
     )
   )
@@ -168,7 +175,8 @@ class MyView : View("GW Mod manager") {
       ModListFragment::modListStrategy to ModListStrategy(
         title = "Active mods",
         modList = modController.activeMods,
-        modAction = modController::deactivateMod
+        modAction = modController::deactivateMod,
+        canReorder = true
       )
     )
   )
