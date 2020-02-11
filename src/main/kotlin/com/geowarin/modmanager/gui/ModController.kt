@@ -14,7 +14,7 @@ class ModController : ItemViewModel<Mod>() {
   val activeMods = mutableListOf<Mod>().asObservable()
   val inactiveMods = mutableListOf<Mod>().asObservable()
 
-  val originalMods = mutableListOf<String>()
+  val originalMods = mutableListOf<String>().asObservable()
 
   init {
     subscribe<ModsLoadRequest> {
@@ -23,9 +23,6 @@ class ModController : ItemViewModel<Mod>() {
   }
 
   fun loadMods(fs: FileSystem = FileSystems.getDefault()) {
-    activeMods.clear()
-    inactiveMods.clear()
-    originalMods.clear()
 
     val rimworldPaths = RimworldPaths(fs)
 
@@ -37,12 +34,14 @@ class ModController : ItemViewModel<Mod>() {
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
     val modsConfig = parseModsConfig(rimworldPaths.configFolder)
-    originalMods += modsConfig.activeMods
+    originalMods.setAll(modsConfig.activeMods)
 
-    activeMods += modsConfig.activeMods.map { activeModId ->
+    val activeMods = modsConfig.activeMods.map { activeModId ->
       allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: modOnlyInConfig(activeModId)
     }
-    inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+    val inactiveMods = allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+    this.activeMods.setAll(activeMods)
+    this.inactiveMods.setAll(inactiveMods)
   }
 
   fun reorder(mod: Mod, targetIdx: Int) {
