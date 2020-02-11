@@ -68,11 +68,11 @@ enum class ModType {
   LOCAL_MOD
 }
 
-fun loadSteamMods(rwms: Rwms, paths: RimworldPaths = RimworldPaths()): List<Mod> {
+fun loadSteamMods(rwms: Rwms, paths: RimworldPaths): List<Mod> {
   return loadMods(paths.steamModsFolder, STEAM_MOD, rwms.db, rwms.categories)
 }
 
-fun loadLocalMods(rwms: Rwms, paths: RimworldPaths = RimworldPaths()): List<Mod> {
+fun loadLocalMods(rwms: Rwms, paths: RimworldPaths): List<Mod> {
   return loadMods(paths.localModsFolder, LOCAL_MOD, rwms.db, rwms.categories)
 }
 

@@ -10,6 +10,8 @@ import com.geowarin.modmanager.mod.loadLocalMods
 import com.geowarin.modmanager.mod.loadSteamMods
 import com.geowarin.modmanager.mod.parseModsConfig
 import tornadofx.*
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
@@ -27,19 +29,21 @@ class ModController : ItemViewModel<Mod>() {
     }
   }
 
-  private fun loadMods() {
+  fun loadMods(fs: FileSystem = FileSystems.getDefault()) {
     activeMods.clear()
     inactiveMods.clear()
     originalMods.clear()
 
-    val rwms = Rwms()
+    val rimworldPaths = RimworldPaths(fs)
+
+    val rwms = Rwms(fs)
     rwms.load()
 
-    val steamMods = loadSteamMods(rwms)
-    val localMods = loadLocalMods(rwms)
+    val steamMods = loadSteamMods(rwms, rimworldPaths)
+    val localMods = loadLocalMods(rwms, rimworldPaths)
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
-    val modsConfig = parseModsConfig(RimworldPaths().configFolder)
+    val modsConfig = parseModsConfig(rimworldPaths.configFolder)
     originalMods += modsConfig.activeMods
 
     activeMods += modsConfig.activeMods.map { activeModId ->
