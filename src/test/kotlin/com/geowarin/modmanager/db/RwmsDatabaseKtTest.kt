@@ -1,7 +1,7 @@
 package com.geowarin.modmanager.db
 
-import com.geowarin.modmanager.db.testUtils.mockWith
-import com.geowarin.modmanager.db.testUtils.write
+import com.geowarin.modmanager.testUtils.mockWith
+import com.geowarin.modmanager.testUtils.write
 import com.geowarin.modmanager.utils.getCacheDir
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs.newFileSystem
@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 internal class RwmsDatabaseKtTest {
 
   @Test
-  fun test() {
+  fun `load database and categories from cache`() {
     val fs: FileSystem = newFileSystem(Configuration.osX())
     getCacheDir(fs).resolve("rwmsdb.json").write(
       """
@@ -51,18 +51,6 @@ internal class RwmsDatabaseKtTest {
       42.0,
       rwms.categories["core"]?.prority
     )
-  }
-
-  @Test
-  fun test2() {
-    val fs: FileSystem = newFileSystem(Configuration.osX())
-    getCacheDir(fs).mockWith("/cache")
-
-    val rwms = Rwms(fs)
-    rwms.load()
-
-    assertTrue(rwms.db.isNotEmpty())
-    assertTrue(rwms.categories.isNotEmpty())
   }
 }
 

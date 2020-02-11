@@ -1,4 +1,4 @@
-package com.geowarin.modmanager.db.testUtils
+package com.geowarin.modmanager.testUtils
 
 import java.io.File
 import java.nio.file.Files

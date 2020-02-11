@@ -2,7 +2,7 @@ package com.geowarin.modmanager.mod
 
 import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.db.Rwms
-import com.geowarin.modmanager.db.testUtils.mockWith
+import com.geowarin.modmanager.testUtils.mockWith
 import com.geowarin.modmanager.utils.getCacheDir
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
@@ -47,7 +47,5 @@ internal class ModsKtTest {
       listOf("HugsLib"),
       prepareLanding.manifest?.dependencies
     )
-
-
   }
 }

@@ -36,6 +36,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
     testImplementation("com.google.jimfs:jimfs:1.1")
+    testImplementation("org.testfx:testfx-core:4.0.16-alpha")
 }
 
 tasks {

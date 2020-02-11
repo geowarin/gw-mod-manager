@@ -15,8 +15,6 @@ import java.nio.file.FileSystems
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
-class SelectedModChangedRequest(val mod: Mod?) : FXEvent(EventBus.RunOn.BackgroundThread)
-
 class ModController : ItemViewModel<Mod>() {
   val activeMods = mutableListOf<Mod>().asObservable()
   val inactiveMods = mutableListOf<Mod>().asObservable()
@@ -50,6 +48,20 @@ class ModController : ItemViewModel<Mod>() {
       allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: defaultMod(activeModId)
     }
     inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+  }
+
+  fun reorder(mod: Mod, targetIdx: Int) {
+    val newItems: ArrayList<Mod> = ArrayList(activeMods)
+    val draggedIdx = activeMods.indexOfFirst { it.modId == mod.modId }
+
+    val draggedItem = newItems.removeAt(draggedIdx)
+    val realTarget = if (targetIdx < draggedIdx) targetIdx + 1 else targetIdx
+    newItems.add(realTarget, draggedItem)
+
+    activeMods.setAll(newItems.map { recomputeModStatus(it, newItems) })
+
+    // change selection
+    this.item = mod
   }
 
   private fun defaultMod(modId: String): Mod {

@@ -3,7 +3,6 @@ package com.geowarin.modmanager
 import com.geowarin.modmanager.gui.AppStyle
 import com.geowarin.modmanager.gui.ModController
 import com.geowarin.modmanager.gui.ModsLoadRequest
-import com.geowarin.modmanager.gui.SelectedModChangedRequest
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.ADDED_TO_MODLIST
 import javafx.collections.ObservableList
@@ -13,6 +12,7 @@ import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color.*
+import org.intellij.lang.annotations.Language
 import tornadofx.*
 import java.awt.Desktop
 import java.net.URI
@@ -67,7 +67,7 @@ class ModListFragment : Fragment() {
         if (modListStrategy.canReorder) {
           tableRow.enableDnDReordering(
             rowIdProvider = Mod::modId,
-            updater = modController::recomputeModStatus
+            updater = modController::reorder
           )
         }
         tableRow
@@ -89,9 +89,6 @@ class ModListFragment : Fragment() {
       modListStrategy.modList.onChange {
         requestResize()
       }
-    }
-    tableview.onSelectionChange { mod ->
-      fire(SelectedModChangedRequest(mod))
     }
     tableview.setOnKeyPressed { e ->
       if (e.code == KeyCode.ENTER) {
@@ -141,7 +138,9 @@ class DescriptionFragment : Fragment() {
         hgrow = Priority.ALWAYS
         modController.itemProperty.onChange { mod ->
           if (mod != null) {
-            engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${mod.metaData?.description}</div>")
+            @Language("html")
+            val html = """<div style='white-space: pre; font-family: Verdana,serif; word-wrap: break-word; padding: 10px'>${mod.metaData?.description}</div>"""
+            engine.loadContent(html)
           }
         }
       }
