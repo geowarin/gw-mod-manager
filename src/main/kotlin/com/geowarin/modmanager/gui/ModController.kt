@@ -10,11 +10,18 @@ import java.nio.file.FileSystems
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
-class ModController : ItemViewModel<Mod>() {
-  val activeMods = mutableListOf<Mod>().asObservable()
-  val inactiveMods = mutableListOf<Mod>().asObservable()
+class ModViewModel: ItemViewModel<Mod>() {
+  val activeMods = observableListOf<Mod>()
+  val inactiveMods = observableListOf<Mod>()
 
-  val originalMods = mutableListOf<String>().asObservable()
+}
+
+class ModController : Controller() {
+  val activeMods = mutableListOf<Mod>()
+  val inactiveMods = mutableListOf<Mod>()
+  val originalMods = mutableListOf<String>()
+
+  val modViewModel: ModViewModel by inject()
 
   init {
     subscribe<ModsLoadRequest> {
@@ -23,6 +30,9 @@ class ModController : ItemViewModel<Mod>() {
   }
 
   fun loadMods(fs: FileSystem = FileSystems.getDefault()) {
+    activeMods.clear()
+    inactiveMods.clear()
+    originalMods.clear()
 
     val rimworldPaths = RimworldPaths(fs)
 
@@ -34,14 +44,17 @@ class ModController : ItemViewModel<Mod>() {
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
     val modsConfig = parseModsConfig(rimworldPaths.configFolder)
-    originalMods.setAll(modsConfig.activeMods)
+    originalMods += modsConfig.activeMods
 
-    val activeMods = modsConfig.activeMods.map { activeModId ->
+    activeMods += modsConfig.activeMods.map { activeModId ->
       allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: modOnlyInConfig(activeModId)
     }
-    val inactiveMods = allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
-    this.activeMods.setAll(activeMods)
-    this.inactiveMods.setAll(inactiveMods)
+    inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+
+    runLater {
+      modViewModel.activeMods.setAll(activeMods)
+      modViewModel.inactiveMods.setAll(inactiveMods)
+    }
   }
 
   fun reorder(mod: Mod, targetIdx: Int) {
@@ -52,16 +65,24 @@ class ModController : ItemViewModel<Mod>() {
     val realTarget = if (targetIdx < draggedIdx) targetIdx + 1 else targetIdx
     newItems.add(realTarget, draggedItem)
 
-    activeMods.setAll(newItems.map { recomputeModStatus(it, newItems) })
+    activeMods.clear()
+    activeMods += newItems.map { recomputeModStatus(it, newItems) }
 
-    // change selection
-    this.item = mod
+    runLater {
+      modViewModel.activeMods.setAll(activeMods)
+      modViewModel.item = mod
+    }
   }
 
   fun activateMod(mod: Mod) {
     inactiveMods -= mod
 
     activeMods += recomputeModStatus(mod, activeMods)
+
+    runLater {
+      modViewModel.activeMods.setAll(activeMods)
+      modViewModel.inactiveMods.setAll(inactiveMods)
+    }
   }
 
   fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
@@ -81,6 +102,11 @@ class ModController : ItemViewModel<Mod>() {
 
     val newStatus = if (originalMods.contains(mod.modId)) REMOVED_FROM_MODLIST else INACTIVE
     inactiveMods += mod.copy(status = newStatus)
+
+    runLater {
+      modViewModel.activeMods.setAll(activeMods)
+      modViewModel.inactiveMods.setAll(inactiveMods)
+    }
   }
 }
 

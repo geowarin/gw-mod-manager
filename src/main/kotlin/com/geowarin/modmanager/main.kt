@@ -2,6 +2,7 @@ package com.geowarin.modmanager
 
 import com.geowarin.modmanager.gui.AppStyle
 import com.geowarin.modmanager.gui.ModController
+import com.geowarin.modmanager.gui.ModViewModel
 import com.geowarin.modmanager.gui.ModsLoadRequest
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.ADDED_TO_MODLIST
@@ -36,18 +37,19 @@ class ModListStrategy(
   val canReorder: Boolean
 )
 
-
 class ModListFragment : Fragment() {
-  //  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
-//  val search = SimpleStringProperty().onChange { srch ->
-//    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
-//  }
   val modListStrategy: ModListStrategy by param()
   val modController: ModController by inject()
+  val modViewModel: ModViewModel by inject()
 
   override val root = borderpane {
     fitToParentWidth()
-    top = label(modListStrategy.title)
+    top = hbox {
+      label(modListStrategy.modList.sizeProperty) {
+        paddingRight = 5
+      }
+      label(modListStrategy.title)
+    }
     val tableview = tableview(modListStrategy.modList) {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
       readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true).cellFormat { priority ->
@@ -72,7 +74,7 @@ class ModListFragment : Fragment() {
         }
         tableRow
       }
-      bindSelected(modController)
+      bindSelected(modViewModel)
       contextmenu {
         item("Browse on steam").action {
           // FIXME: when local, do not show this option
@@ -109,7 +111,7 @@ fun openInBrowser(address: String) {
 }
 
 class DescriptionFragment : Fragment() {
-  val modController: ModController by inject()
+  val modController: ModViewModel by inject()
 
   override val root =
     hbox {
@@ -149,6 +151,7 @@ class DescriptionFragment : Fragment() {
 
 class MyView : View("GW Mod manager") {
   val modController: ModController by inject()
+  val modViewModel: ModViewModel by inject()
 
   init {
     // for dev only
@@ -163,7 +166,7 @@ class MyView : View("GW Mod manager") {
     ModListFragment::class, mapOf(
       ModListFragment::modListStrategy to ModListStrategy(
         title = "Inactive mods",
-        modList = modController.inactiveMods,
+        modList = modViewModel.inactiveMods,
         modAction = modController::activateMod,
         canReorder = false
       )
@@ -173,7 +176,7 @@ class MyView : View("GW Mod manager") {
     ModListFragment::class, mapOf(
       ModListFragment::modListStrategy to ModListStrategy(
         title = "Active mods",
-        modList = modController.activeMods,
+        modList = modViewModel.activeMods,
         modAction = modController::deactivateMod,
         canReorder = true
       )
