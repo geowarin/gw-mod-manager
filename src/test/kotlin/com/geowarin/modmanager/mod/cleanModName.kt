@@ -20,7 +20,7 @@ internal class cleanModName {
     "Better Infestations 1.0" to "Better Infestations",
     "[v1.0]-LinkableDoors" to "LinkableDoors",
 
-    "[KV] Trading Spot - 1.0" to "Trading Spot",
+    "[KV] Trading Spot - 1.0" to "[KV] Trading Spot",
     "[1.0]-StockpileForDisaster" to "StockpileForDisaster"
   ).map { (modName, cleaned) ->
     DynamicTest.dynamicTest("$modName should be cleaned to $cleaned") {

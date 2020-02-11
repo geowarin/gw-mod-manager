@@ -1,14 +1,9 @@
 package com.geowarin.modmanager.gui
 
-import com.geowarin.modmanager.db.Category
 import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.db.Rwms
-import com.geowarin.modmanager.mod.Mod
+import com.geowarin.modmanager.mod.*
 import com.geowarin.modmanager.mod.ModStatus.*
-import com.geowarin.modmanager.mod.ModType.LOCAL_MOD
-import com.geowarin.modmanager.mod.loadLocalMods
-import com.geowarin.modmanager.mod.loadSteamMods
-import com.geowarin.modmanager.mod.parseModsConfig
 import tornadofx.*
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -45,7 +40,7 @@ class ModController : ItemViewModel<Mod>() {
     originalMods += modsConfig.activeMods
 
     activeMods += modsConfig.activeMods.map { activeModId ->
-      allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: defaultMod(activeModId)
+      allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: modOnlyInConfig(activeModId)
     }
     inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
   }
@@ -62,15 +57,6 @@ class ModController : ItemViewModel<Mod>() {
 
     // change selection
     this.item = mod
-  }
-
-  private fun defaultMod(modId: String): Mod {
-    return Mod(
-      cleanModName = modId,
-      status = ACTIVE,
-      modType = LOCAL_MOD,
-      category = Category(999.0, "Not found")
-    )
   }
 
   fun activateMod(mod: Mod) {

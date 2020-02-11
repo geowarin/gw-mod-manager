@@ -7,7 +7,7 @@ import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 
 internal class ModsTest {
-  val db = databaseResource.justLoad(javaClass.getResource("/rwmsdb.json"))
+  val db = databaseResource.justLoad(javaClass.getResource("/cache/rwmsdb.json"))
 
   @TestFactory
   fun `Mod category`() = listOf(
@@ -33,7 +33,7 @@ internal class ModsTest {
     "Lights Tab" to null,
     "Vanilla Furniture Expanded - Production" to "production",
     "[v1.0]-LinkableDoors" to "texture",
-    "[KV] Trading Spot - 1.0" to "ui",
+    "[KV] Trading Spot - 1.0" to "trading",
     "[RF] Rumor Has It.... [1.0]" to "ai",
     "Vanilla Weapons Expanded - Laser" to null,
     "[1.0] Apparel Organizer" to "ui",
