@@ -17,6 +17,9 @@ data class Mod(
 
   val steamId
     get() = baseDir.name
+
+  val imageURI
+    get() = File(baseDir, "About/Preview.png").toURI()
 }
 
 fun loadMods(

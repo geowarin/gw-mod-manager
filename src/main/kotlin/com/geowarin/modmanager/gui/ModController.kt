@@ -7,21 +7,18 @@ import com.geowarin.modmanager.load
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.loadMods
 import com.geowarin.modmanager.mod.parseModsConfig
+import javafx.beans.value.ObservableObjectValue
 import tornadofx.*
 import java.io.File
+import java.net.URI
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
-class ModsListResponse(val inactiveMods: List<Mod>, val activeMods: List<Mod>) : FXEvent()
 
 class SelectedModChangedRequest(val mod: Mod?) : FXEvent(EventBus.RunOn.BackgroundThread)
-class SelectedModChangedResponse(val description: String, val imageUrl: String) : FXEvent()
 
-class ModActivationRequest(val mod: Mod) : FXEvent(EventBus.RunOn.BackgroundThread)
-class ModDeactivationRequest(val mod: Mod) : FXEvent(EventBus.RunOn.BackgroundThread)
-
-class ModController : Controller() {
-  val activeMods = mutableListOf<Mod>()
-  val inactiveMods = mutableListOf<Mod>()
+class ModController : ItemViewModel<Mod>() {
+  val activeMods = mutableListOf<Mod>().asObservable()
+  val inactiveMods = mutableListOf<Mod>().asObservable()
 
   init {
     subscribe<ModsLoadRequest> {
@@ -41,25 +38,15 @@ class ModController : Controller() {
         allMods.find { it.baseDir.name == activeModId } ?: Mod(cleanModName = activeModId)
       }
       inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.baseDir.name) }
-
-      fire(ModsListResponse(inactiveMods, activeMods))
     }
-    subscribe<SelectedModChangedRequest> {
-      if (it.mod != null) {
-        val imageUrl = File(it.mod.baseDir, "About/Preview.png").toURI().toURL().toString()
-        fire(SelectedModChangedResponse(it.mod.metaData.description, imageUrl))
-      }
-    }
-    subscribe<ModActivationRequest> { e ->
-      activeMods += e.mod
-      inactiveMods -= e.mod
-      fire(ModsListResponse(inactiveMods, activeMods))
-    }
-    subscribe<ModDeactivationRequest> { e ->
-      activeMods -= e.mod
-      inactiveMods += e.mod
-      fire(ModsListResponse(inactiveMods, activeMods))
-    }
+  }
+  fun activateMod(mod: Mod) {
+    activeMods += mod
+    inactiveMods -= mod
+  }
+  fun deactivateMod(mod: Mod) {
+    activeMods -= mod
+    inactiveMods += mod
   }
 }
 

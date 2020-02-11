@@ -1,7 +1,11 @@
 package com.geowarin.modmanager
 
-import com.geowarin.modmanager.gui.*
+import com.geowarin.modmanager.gui.AppStyle
+import com.geowarin.modmanager.gui.ModController
+import com.geowarin.modmanager.gui.ModsLoadRequest
+import com.geowarin.modmanager.gui.SelectedModChangedRequest
 import com.geowarin.modmanager.mod.Mod
+import javafx.collections.ObservableList
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
@@ -21,12 +25,11 @@ class ToolbarView : View() {
   }
 }
 
-typealias ModListSelector = (ModsListResponse) -> List<Mod>
 typealias ModAction = (Mod) -> Unit
 
 class ModListStrategy(
   val title: String,
-  val modListSelector: ModListSelector,
+  val modList: ObservableList<Mod>,
   val modAction: ModAction
 )
 
@@ -37,11 +40,12 @@ class ModListFragment : Fragment() {
 //    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
 //  }
   val modListStrategy: ModListStrategy by param()
+  val modController: ModController by inject()
 
   override val root = borderpane {
     fitToParentWidth()
     top = label(modListStrategy.title)
-    val tableview = tableview<Mod> {
+    val tableview = tableview(modListStrategy.modList) {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
       readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true).cellFormat { priority ->
         text = priority
@@ -49,10 +53,7 @@ class ModListFragment : Fragment() {
       }
       readonlyColumn("Priority", Mod::priority).weightedWidth(10, minContentWidth = true)
 
-      subscribe<ModsListResponse> { event ->
-        items.setAll(modListStrategy.modListSelector(event))
-        requestResize()
-      }
+      bindSelected(modController)
       contextmenu {
         item("Browse on steam").action {
           selectedItem?.apply { openInBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=${steamId}") }
@@ -63,6 +64,9 @@ class ModListFragment : Fragment() {
         item("Open in explorer").action {
           selectedItem?.apply { Desktop.getDesktop().open(baseDir) }
         }
+      }
+      modListStrategy.modList.onChange {
+        requestResize()
       }
     }
     tableview.onSelectionChange { mod ->
@@ -87,57 +91,71 @@ fun openInBrowser(address: String) {
 }
 
 class DescriptionFragment : Fragment() {
+  val modController: ModController by inject()
+
   override val root =
     hbox {
       style {
         backgroundColor += WHITE
       }
       useMaxWidth = true
+
       pane {
         setPrefSize(200.0, 200.0)
-        subscribe<SelectedModChangedResponse> { e ->
-          style {
-            backgroundImage += URI(e.imageUrl)
-            backgroundSize = multi(BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false))
-            backgroundRepeat = multi(BackgroundRepeat.NO_REPEAT to BackgroundRepeat.NO_REPEAT)
+        style {
+          backgroundSize = multi(BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false))
+          backgroundRepeat = multi(BackgroundRepeat.NO_REPEAT to BackgroundRepeat.NO_REPEAT)
+        }
+        modController.itemProperty.onChange { mod ->
+          if (mod != null) {
+            style(append = true) {
+              backgroundImage += mod.imageURI
+            }
           }
         }
       }
       webview {
         prefHeight = 200.0
         hgrow = Priority.ALWAYS
-        subscribe<SelectedModChangedResponse> {
-          engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${it.description}</div>")
+        modController.itemProperty.onChange { mod ->
+          if (mod != null) {
+            engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${mod.metaData.description}</div>")
+          }
         }
       }
     }
 }
 
 class MyView : View("GW Mod manager") {
+  val modController: ModController by inject()
+
   init {
-    find(ModController::class)
     // for dev only
     fire(ModsLoadRequest)
   }
 
-//  override fun onBeforeShow() {
-//    fire(ModsLoadRequest)
-//  }
+  override fun onBeforeShow() {
+    fire(ModsLoadRequest)
+  }
 
-  val inactiveModList = find(ModListFragment::class, mapOf(ModListFragment::modListStrategy to ModListStrategy(
-    title = "Inactive mods",
-    modListSelector = { e -> e.inactiveMods },
-    modAction = { mod ->
-      fire(ModActivationRequest(mod))
-    }
-  )))
-  val activeModList = find(ModListFragment::class, mapOf(ModListFragment::modListStrategy to ModListStrategy(
-    title = "Active mods",
-    modListSelector = { e -> e.activeMods },
-    modAction = { mod ->
-      fire(ModDeactivationRequest(mod))
-    }
-  )))
+  val inactiveModList = find(
+    ModListFragment::class, mapOf(
+      ModListFragment::modListStrategy to ModListStrategy(
+        title = "Inactive mods",
+        modList = modController.inactiveMods,
+        modAction = modController::activateMod
+      )
+    )
+  )
+  val activeModList = find(
+    ModListFragment::class, mapOf(
+      ModListFragment::modListStrategy to ModListStrategy(
+        title = "Active mods",
+        modList = modController.activeMods,
+        modAction = modController::deactivateMod
+      )
+    )
+  )
 
   override val root =
     borderpane {
