@@ -1,13 +1,12 @@
 package com.geowarin.modmanager
 
 import com.geowarin.modmanager.gui.*
-import com.geowarin.modmanager.gui.AppStyle.Companion.fail
 import com.geowarin.modmanager.mod.Mod
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.layout.BackgroundSize
-import javafx.scene.paint.Color.BLACK
-import javafx.scene.paint.Color.RED
+import javafx.scene.layout.Priority
+import javafx.scene.paint.Color.*
 import tornadofx.*
 import java.awt.Desktop
 import java.net.URI
@@ -32,7 +31,7 @@ class ModListStrategy(
 )
 
 
-class ModListView : Fragment() {
+class ModListFragment : Fragment() {
   //  val mods: FilteredList<Mod> = FilteredList(FXCollections.observableArrayList<Mod>())
 //  val search = SimpleStringProperty().onChange { srch ->
 //    mods.setPredicate { srch.isNullOrBlank() || it.cleanModName.toLowerCase().contains(srch.toLowerCase()) }
@@ -87,9 +86,12 @@ fun openInBrowser(address: String) {
   }
 }
 
-class DescriptionView : View() {
+class DescriptionFragment : Fragment() {
   override val root =
-    vbox {
+    hbox {
+      style {
+        backgroundColor += WHITE
+      }
       useMaxWidth = true
       pane {
         setPrefSize(200.0, 200.0)
@@ -103,6 +105,7 @@ class DescriptionView : View() {
       }
       webview {
         prefHeight = 200.0
+        hgrow = Priority.ALWAYS
         subscribe<SelectedModChangedResponse> {
           engine.loadContent("<div style='white-space: pre; font-family: Verdana; word-wrap: break-word; padding: 10px'>${it.description}</div>")
         }
@@ -117,18 +120,18 @@ class MyView : View("GW Mod manager") {
     fire(ModsLoadRequest)
   }
 
-  override fun onBeforeShow() {
-    fire(ModsLoadRequest)
-  }
+//  override fun onBeforeShow() {
+//    fire(ModsLoadRequest)
+//  }
 
-  val inactiveModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
+  val inactiveModList = find(ModListFragment::class, mapOf(ModListFragment::modListStrategy to ModListStrategy(
     title = "Inactive mods",
     modListSelector = { e -> e.inactiveMods },
     modAction = { mod ->
       fire(ModActivationRequest(mod))
     }
   )))
-  val activeModList = find(ModListView::class, mapOf(ModListView::modListStrategy to ModListStrategy(
+  val activeModList = find(ModListFragment::class, mapOf(ModListFragment::modListStrategy to ModListStrategy(
     title = "Active mods",
     modListSelector = { e -> e.activeMods },
     modAction = { mod ->
@@ -143,7 +146,7 @@ class MyView : View("GW Mod manager") {
         add(inactiveModList)
         add(activeModList)
       }
-      bottom = find(DescriptionView::class).root
+      bottom = find(DescriptionFragment::class).root
     }
 }
 

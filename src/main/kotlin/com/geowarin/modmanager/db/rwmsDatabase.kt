@@ -67,7 +67,7 @@ private fun <T> CachedResource<T>.downloadToCache(): File {
   cacheDbFile.parentFile.mkdirs()
   URL(url).openStream().bufferedReader().use { input ->
     FileWriter(cacheDbFile).use { output ->
-      input.transferTo(output)
+      input.copyTo(output)
     }
   }
   return cacheDbFile

@@ -38,7 +38,6 @@ fun loadMods(
   }
 }
 
-
 fun cleanModName(name: String): String {
   return name
 }

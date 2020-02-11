@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MyApp" type="TORNADOFX_RUNCONFIGURATION" factoryName="TornadoFX Configuration Factory" run-type="App" live-views="true" live-stylesheets="true" dump-stylesheets="false">
+    <option name="MAIN_CLASS_NAME" value="com.geowarin.modmanager.MyApp" />
+    <module name="gw-mod-manager.main" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

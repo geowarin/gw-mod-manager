@@ -34,7 +34,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
-    testCompile("org.junit.jupiter:junit-jupiter-params:5.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
 }
 
 tasks {
@@ -50,10 +50,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-javafx {
-    version = "13"
-    modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.web")
-}
+//javafx {
+//    version = "13"
+//    modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.web")
+//}
 
 jlink {
     launcher {
