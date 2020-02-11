@@ -25,7 +25,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 //    implementation(kotlin("reflect"))
 
-    implementation("com.gitlab.mvysny.konsume-xml:konsume-xml:0.8")
+    implementation("com.gitlab.mvysny.konsume-xml:konsume-xml:0.9")
     implementation("com.beust:klaxon:5.2")
 
     implementation("no.tornado:tornadofx:1.7.20"){

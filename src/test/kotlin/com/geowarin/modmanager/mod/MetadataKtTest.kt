@@ -18,14 +18,13 @@ internal class MetadataKtTest {
         |line2
 """.trimMargin(),
       """
-      <ModMetaData>
-        <description>
-        <![CDATA[line1
-      line2
-      ]]>
-        </description>
-      </ModMetaData>
-    """.trimIndent().parseMeta().description
+      |<ModMetaData>
+      |  <description>
+      |  <![CDATA[line1
+      |line2]]>
+      |  </description>
+      |</ModMetaData>
+    """.trimMargin().parseMeta().description
     )
 
     // https://gitlab.com/mvysny/konsume-xml/issues/8
@@ -37,7 +36,7 @@ internal class MetadataKtTest {
       <ModMetaData>
         <description>
         line1
-        line2
+      line2
         </description>
       </ModMetaData>
     """.trimIndent().parseMeta().description

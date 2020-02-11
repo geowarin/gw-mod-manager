@@ -4,6 +4,7 @@ import com.geowarin.modmanager.utils.exists
 import com.geowarin.modmanager.utils.konsumeXml
 import com.gitlab.mvysny.konsumexml.Konsumer
 import com.gitlab.mvysny.konsumexml.Names
+import com.gitlab.mvysny.konsumexml.Whitespace
 import com.gitlab.mvysny.konsumexml.allChildrenAutoIgnore
 import java.io.File
 import java.nio.file.Path
@@ -33,7 +34,7 @@ data class ModMetaData(
         when (this.name?.localPart) {
           "name" -> name = this.text()
           "author" -> author = this.text()
-          "description" -> description = this.text()
+          "description" -> description = this.text(whitespace = Whitespace.preserve).trim()
           "url" -> url = this.text()
           else -> this.skipContents()
         }

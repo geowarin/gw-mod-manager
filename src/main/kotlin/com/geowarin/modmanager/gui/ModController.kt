@@ -13,7 +13,11 @@ object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 class ModViewModel: ItemViewModel<Mod>() {
   val activeMods = observableListOf<Mod>()
   val inactiveMods = observableListOf<Mod>()
+}
 
+fun <T> MutableCollection<T>.setAll(items: Collection<T>) {
+  this.clear()
+  this += items
 }
 
 class ModController : Controller() {
@@ -85,7 +89,7 @@ class ModController : Controller() {
     }
   }
 
-  fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
+  private fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
     val originalIndex = originalMods.indexOf(mod.modId)
     val newIndex = activeMods.filter { it.status != ADDED_TO_MODLIST }.indexOfFirst { it.modId == mod.modId }
     val newStatus = when {
