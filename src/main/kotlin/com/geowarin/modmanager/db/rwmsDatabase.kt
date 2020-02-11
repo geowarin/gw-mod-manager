@@ -1,11 +1,16 @@
-package com.geowarin.modmanager
+package com.geowarin.modmanager.db
 
 import com.beust.klaxon.Klaxon
+import com.geowarin.modmanager.utils.exists
 import com.geowarin.modmanager.utils.getCacheDir
-import java.io.File
-import java.io.FileWriter
+import com.geowarin.modmanager.utils.toURI
 import java.io.Reader
+import java.net.URI
 import java.net.URL
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
 
 
 val databaseResource = CachedResource(
@@ -31,13 +36,13 @@ data class Category(
   val fullName: String
 )
 
-class Rwms() {
+class Rwms(val fs: FileSystem = FileSystems.getDefault()) {
   var db: Map<String, String> = emptyMap()
   var categories: Map<String, Category> = emptyMap()
 
   fun load() {
-    db = databaseResource.load()
-    categories = categoriesResource.load()
+    db = databaseResource.load(fs)
+    categories = categoriesResource.load(fs)
   }
 }
 
@@ -58,25 +63,25 @@ fun dbLoader(reader: Reader): Map<String, String> {
   return data.obj("db")!!.map as Map<String, String>
 }
 
-fun <T> CachedResource<T>.load(): T {
-  val cachedDb = File(getCacheDir(), this.fileName)
+fun <T> CachedResource<T>.load(fs: FileSystem): T {
+  val cachedDb = getCacheDir(fs).resolve(this.fileName)
   if (cachedDb.exists()) {
     println("Loading ${this.fileName} from cache")
     return justLoad(cachedDb.toURI().toURL())
   }
-  return downloadAndParse()
+  return downloadAndParse(fs)
 }
 
-private fun <T> CachedResource<T>.downloadAndParse(): T {
-  val dbFile = this.downloadToCache()
+private fun <T> CachedResource<T>.downloadAndParse(fs: FileSystem): T {
+  val dbFile = this.downloadToCache(fs)
   return justLoad(dbFile.toURI().toURL())
 }
 
-private fun <T> CachedResource<T>.downloadToCache(): File {
-  val cacheDbFile = File(getCacheDir(), fileName)
-  cacheDbFile.parentFile.mkdirs()
+private fun <T> CachedResource<T>.downloadToCache(fs: FileSystem): Path {
+  val cacheDbFile = getCacheDir(fs).resolve(this.fileName)
+  Files.createDirectories(cacheDbFile.parent)
   URL(url).openStream().bufferedReader().use { input ->
-    FileWriter(cacheDbFile).use { output ->
+    Files.newBufferedWriter(cacheDbFile).use { output ->
       input.copyTo(output)
     }
   }

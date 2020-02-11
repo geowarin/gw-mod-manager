@@ -1,7 +1,7 @@
 package com.geowarin.modmanager.mod
 
-import com.geowarin.modmanager.databaseResource
-import com.geowarin.modmanager.justLoad
+import com.geowarin.modmanager.db.databaseResource
+import com.geowarin.modmanager.db.justLoad
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals

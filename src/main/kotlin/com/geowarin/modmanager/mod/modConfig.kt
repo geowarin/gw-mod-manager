@@ -1,16 +1,17 @@
 package com.geowarin.modmanager.mod
 
+import com.geowarin.modmanager.utils.konsumeXml
 import com.gitlab.mvysny.konsumexml.Names
-import com.gitlab.mvysny.konsumexml.konsumeXml
 import java.io.File
+import java.nio.file.Path
 
 data class ModConfig(
   val version: String,
   val activeMods: List<String>
 )
 
-fun parseModsConfig(configFolder: File): ModConfig {
-  val modsConfigFile = File(configFolder, "ModsConfig.xml")
+fun parseModsConfig(configFolder: Path): ModConfig {
+  val modsConfigFile = configFolder.resolve("ModsConfig.xml")
   modsConfigFile.konsumeXml().use {
     val konsumer = it.nextElement(Names.of("ModsConfigData"), true)!!
     val version = konsumer.childText("version")

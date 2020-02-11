@@ -1,8 +1,8 @@
 package com.geowarin.modmanager.gui
 
-import com.geowarin.modmanager.Category
-import com.geowarin.modmanager.Paths
-import com.geowarin.modmanager.Rwms
+import com.geowarin.modmanager.db.Category
+import com.geowarin.modmanager.RimworldPaths
+import com.geowarin.modmanager.db.Rwms
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.*
 import com.geowarin.modmanager.mod.ModType.LOCAL_MOD
@@ -39,16 +39,16 @@ class ModController : ItemViewModel<Mod>() {
     val localMods = loadLocalMods(rwms)
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
-    val modsConfig = parseModsConfig(Paths.configFolder)
+    val modsConfig = parseModsConfig(RimworldPaths().configFolder)
     originalMods += modsConfig.activeMods
 
     activeMods += modsConfig.activeMods.map { activeModId ->
-      allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: defaultMod(activeModId, rwms)
+      allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: defaultMod(activeModId)
     }
     inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
   }
 
-  private fun defaultMod(modId: String, rwms: Rwms): Mod {
+  private fun defaultMod(modId: String): Mod {
     return Mod(
       cleanModName = modId,
       status = ACTIVE,

@@ -1,10 +1,12 @@
 package com.geowarin.modmanager.mod
 
+import com.geowarin.modmanager.utils.exists
+import com.geowarin.modmanager.utils.konsumeXml
 import com.gitlab.mvysny.konsumexml.Konsumer
 import com.gitlab.mvysny.konsumexml.Names
 import com.gitlab.mvysny.konsumexml.allChildrenAutoIgnore
-import com.gitlab.mvysny.konsumexml.konsumeXml
 import java.io.File
+import java.nio.file.Path
 
 data class ModMetaData(
   val name: String = "",
@@ -41,8 +43,8 @@ data class ModMetaData(
   }
 }
 
-fun parseMetadata(mod: File): ModMetaData? {
-  val aboutFile = File(mod, "About/About.xml")
+fun parseMetadata(mod: Path): ModMetaData? {
+  val aboutFile = mod.resolve("About/About.xml")
   if (!aboutFile.exists()) {
     return null
   }

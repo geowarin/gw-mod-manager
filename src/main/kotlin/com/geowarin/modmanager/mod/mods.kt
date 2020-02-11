@@ -1,19 +1,25 @@
 package com.geowarin.modmanager.mod
 
-import com.geowarin.modmanager.Category
-import com.geowarin.modmanager.Paths
-import com.geowarin.modmanager.Rwms
+import com.geowarin.modmanager.db.Category
+import com.geowarin.modmanager.RimworldPaths
+import com.geowarin.modmanager.db.Rwms
 import com.geowarin.modmanager.mod.ModType.LOCAL_MOD
 import com.geowarin.modmanager.mod.ModType.STEAM_MOD
+import com.geowarin.modmanager.utils.exists
+import com.geowarin.modmanager.utils.toURI
 import java.io.File
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
+import kotlin.streams.toList
 
 data class Mod(
   val cleanModName: String,
   val status: ModStatus = ModStatus.UNKNOWN,
   val modType: ModType,
-  val baseDir: File? = null,
+  val baseDir: Path = Paths.get("/"),
   val metaData: ModMetaData? = null,
   val category: Category? = null,
   val manifest: ModManifest? = null
@@ -26,13 +32,13 @@ data class Mod(
 
   val modId: String
     get() = when(modType){
-      STEAM_MOD -> baseDir?.name!!
+      STEAM_MOD -> baseDir.fileName.toString()
       LOCAL_MOD -> cleanModName
     }
 
   val imageURI: URI?
     get() {
-      val preview = File(baseDir, "About/Preview.png")
+      val preview = baseDir.resolve("About/Preview.png")
       if (preview.exists())
         return preview.toURI()
       return null
@@ -62,22 +68,22 @@ enum class ModType {
   LOCAL_MOD
 }
 
-fun loadSteamMods(rwms: Rwms): List<Mod> {
-  return loadMods(Paths.steamModsFolder, STEAM_MOD, rwms.db, rwms.categories)
+fun loadSteamMods(rwms: Rwms, paths: RimworldPaths = RimworldPaths()): List<Mod> {
+  return loadMods(paths.steamModsFolder, STEAM_MOD, rwms.db, rwms.categories)
 }
 
-fun loadLocalMods(rwms: Rwms): List<Mod> {
-  return loadMods(Paths.localModsFolder, LOCAL_MOD, rwms.db, rwms.categories)
+fun loadLocalMods(rwms: Rwms, paths: RimworldPaths = RimworldPaths()): List<Mod> {
+  return loadMods(paths.localModsFolder, LOCAL_MOD, rwms.db, rwms.categories)
 }
 
 fun loadMods(
-  modsDir: File,
+  modsDir: Path,
   modType: ModType,
   db: Map<String, Any?> = mapOf(),
   categories: Map<String, Category>
 ): List<Mod> {
-  val modDirs = modsDir.listFiles()?.toList() ?: emptyList()
-  val mods = modDirs.mapNotNull { baseDir: File ->
+  val modDirs = Files.list(modsDir).toList()
+  val mods = modDirs.mapNotNull { baseDir ->
     val metadata = parseMetadata(baseDir)
     if (metadata == null)
       null
@@ -96,7 +102,7 @@ fun loadMods(
       )
     }
   }
-  println("Loaded ${mods.size} mods from ${modsDir.toURI()}")
+  println("Loaded ${mods.size} mods from ${modsDir.toUri()}")
   return mods
 }
 

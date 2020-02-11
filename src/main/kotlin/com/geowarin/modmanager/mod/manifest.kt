@@ -1,10 +1,11 @@
 package com.geowarin.modmanager.mod
 
-import com.gitlab.mvysny.konsumexml.Konsumer
-import com.gitlab.mvysny.konsumexml.Names
-import com.gitlab.mvysny.konsumexml.allChildrenAutoIgnore
-import com.gitlab.mvysny.konsumexml.konsumeXml
+import com.geowarin.modmanager.utils.exists
+import com.geowarin.modmanager.utils.konsumeXml
+import com.gitlab.mvysny.konsumexml.*
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 data class ModVersion(
   val version: String
@@ -62,10 +63,11 @@ data class ModManifest(
   }
 }
 
-fun parseManifest(mod: File): ModManifest? {
-  val aboutFile = File(mod, "About/Manifest.xml")
+fun parseManifest(mod: Path): ModManifest? {
+  val aboutFile = mod.resolve("About/Manifest.xml")
   if (!aboutFile.exists()) {
     return null
   }
   return aboutFile.konsumeXml().child("Manifest") { ModManifest.xml(this) }
 }
+

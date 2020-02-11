@@ -1,8 +1,8 @@
 plugins {
     kotlin("jvm") version "1.3.61"
     application
-    id("org.openjfx.javafxplugin") version "0.0.8"
-    id("org.beryx.jlink") version "2.17.1"
+//    id("org.openjfx.javafxplugin") version "0.0.8"
+//    id("org.beryx.jlink") version "2.17.1"
 }
 
 group = "com.geowarin"
@@ -35,6 +35,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
+    testImplementation("com.google.jimfs:jimfs:1.1")
 }
 
 tasks {
@@ -54,11 +55,11 @@ tasks.withType<Test> {
 //    version = "13"
 //    modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.web")
 //}
-
-jlink {
-    launcher {
-        name = "gw-mod-manager"
-    }
-    addExtraDependencies("javafx")
-    imageZip.set(project.file("${project.buildDir}/image-zip/gw-mod-manager.zip"))
-}
+//
+//jlink {
+//    launcher {
+//        name = "gw-mod-manager"
+//    }
+//    addExtraDependencies("javafx")
+//    imageZip.set(project.file("${project.buildDir}/image-zip/gw-mod-manager.zip"))
+//}

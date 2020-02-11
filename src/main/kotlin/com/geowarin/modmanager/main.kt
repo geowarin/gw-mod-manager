@@ -83,7 +83,7 @@ class ModListFragment : Fragment() {
           selectedItem?.metaData?.apply { openInBrowser(url) }
         }
         item("Open in explorer").action {
-          selectedItem?.apply { Desktop.getDesktop().open(baseDir) }
+          selectedItem?.apply { Desktop.getDesktop().open(baseDir.toFile()) }
         }
       }
       modListStrategy.modList.onChange {
