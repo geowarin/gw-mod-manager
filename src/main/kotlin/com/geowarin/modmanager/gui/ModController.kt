@@ -1,10 +1,14 @@
 package com.geowarin.modmanager.gui
 
+import com.geowarin.modmanager.Category
 import com.geowarin.modmanager.Paths
 import com.geowarin.modmanager.Rwms
-import com.geowarin.modmanager.mod.*
+import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.*
 import com.geowarin.modmanager.mod.ModType.LOCAL_MOD
+import com.geowarin.modmanager.mod.loadLocalMods
+import com.geowarin.modmanager.mod.loadSteamMods
+import com.geowarin.modmanager.mod.parseModsConfig
 import tornadofx.*
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
@@ -19,29 +23,38 @@ class ModController : ItemViewModel<Mod>() {
 
   init {
     subscribe<ModsLoadRequest> {
-      activeMods.clear()
-      inactiveMods.clear()
-      originalMods.clear()
-
-      val rwms = Rwms()
-      rwms.load()
-
-      val steamMods = loadSteamMods(rwms)
-      val localMods = loadLocalMods(rwms)
-      val allMods = (steamMods + localMods).sortedBy { it.priority }
-
-      val modsConfig = parseModsConfig(Paths.configFolder)
-      originalMods += modsConfig.activeMods
-
-      activeMods += modsConfig.activeMods.map { activeModId ->
-        allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: Mod(
-          cleanModName = activeModId,
-          status = ACTIVE,
-          modType = LOCAL_MOD
-        )
-      }
-      inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+      loadMods()
     }
+  }
+
+  private fun loadMods() {
+    activeMods.clear()
+    inactiveMods.clear()
+    originalMods.clear()
+
+    val rwms = Rwms()
+    rwms.load()
+
+    val steamMods = loadSteamMods(rwms)
+    val localMods = loadLocalMods(rwms)
+    val allMods = (steamMods + localMods).sortedBy { it.priority }
+
+    val modsConfig = parseModsConfig(Paths.configFolder)
+    originalMods += modsConfig.activeMods
+
+    activeMods += modsConfig.activeMods.map { activeModId ->
+      allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: defaultMod(activeModId, rwms)
+    }
+    inactiveMods += allMods.filter { !modsConfig.activeMods.contains(it.modId) }.map { it.copy(status = INACTIVE) }
+  }
+
+  private fun defaultMod(modId: String, rwms: Rwms): Mod {
+    return Mod(
+      cleanModName = modId,
+      status = ACTIVE,
+      modType = LOCAL_MOD,
+      category = Category(999.0, "Not found")
+    )
   }
 
   fun activateMod(mod: Mod) {
@@ -65,7 +78,7 @@ class ModController : ItemViewModel<Mod>() {
   fun deactivateMod(mod: Mod) {
     activeMods -= mod
 
-    val newStatus = if (originalMods.contains(mod.modId)) REMOVED_DROM_MODLIST else INACTIVE
+    val newStatus = if (originalMods.contains(mod.modId)) REMOVED_FROM_MODLIST else INACTIVE
     inactiveMods += mod.copy(status = newStatus)
   }
 }

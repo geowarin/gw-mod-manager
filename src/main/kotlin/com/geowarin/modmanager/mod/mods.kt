@@ -49,7 +49,7 @@ data class Mod(
 
 enum class ModStatus {
   ADDED_TO_MODLIST,
-  REMOVED_DROM_MODLIST,
+  REMOVED_FROM_MODLIST,
   INACTIVE,
   ACTIVE,
   ACTIVE_MOVED_UP,

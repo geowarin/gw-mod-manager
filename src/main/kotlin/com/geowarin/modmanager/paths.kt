@@ -34,7 +34,7 @@ object Paths {
   val localModsFolder
     get() = when {
       OS.isWindows -> File(System.getenv("ProgramFiles(x86)"), "Steam/steamapps/common/RimWorld/Mods")
-      OS.isMac -> File(System.getProperty("user.home"), "Library/ApplicationSupport/Steam/steamapps/common/RimWorld/Mods")
+      OS.isMac -> File(System.getProperty("user.home"), "Library/ApplicationSupport/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods")
       else -> throw Error()
     }
 
