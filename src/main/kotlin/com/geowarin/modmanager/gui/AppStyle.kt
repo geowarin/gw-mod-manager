@@ -1,12 +1,12 @@
 package com.geowarin.modmanager.gui
 
-import javafx.scene.paint.Color
 import tornadofx.*
 
 class AppStyle : Stylesheet() {
 
   companion object {
     val fail by cssclass()
+    val added by cssclass()
   }
 
   init {
@@ -16,9 +16,16 @@ class AppStyle : Stylesheet() {
       prefHeight = 1000.px
     }
 
-    fail{
+    fail {
       backgroundColor += c("#FF5722", .5)
-      and(selected){
+      and(selected) {
+        backgroundColor += c("#0096C9", .5)
+      }
+    }
+
+    added {
+      backgroundColor += c("#3eff4e", 0.50)
+      and(selected) {
         backgroundColor += c("#0096C9", .5)
       }
     }

@@ -1,13 +1,13 @@
 package com.geowarin.modmanager.mod
 
-import com.geowarin.modmanager.database
+import com.geowarin.modmanager.databaseResource
 import com.geowarin.modmanager.justLoad
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 
 internal class ModsTest {
-  val db = database.justLoad(javaClass.getResource("/rwmsdb.json"))
+  val db = databaseResource.justLoad(javaClass.getResource("/rwmsdb.json"))
 
   @TestFactory
   fun `Mod category`() = listOf(

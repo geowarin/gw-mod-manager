@@ -8,13 +8,13 @@ import java.io.Reader
 import java.net.URL
 
 
-val database = CachedResource(
+val databaseResource = CachedResource(
   url = "https://api.bitbucket.org/2.0/repositories/shakeyourbunny/rwmsdb/src/master/rwmsdb.json",
   fileName = "rwmsdb.json",
   loader = ::dbLoader
 )
 
-val categories = CachedResource(
+val categoriesResource = CachedResource(
   url = "https://api.bitbucket.org/2.0/repositories/shakeyourbunny/rwmsdb/src/master/rwms_db_categories.json",
   fileName = "categories.json",
   loader = ::categoriesLoader
@@ -30,6 +30,16 @@ data class Category(
   val prority: Double,
   val fullName: String
 )
+
+class Rwms() {
+  var db: Map<String, String> = emptyMap()
+  var categories: Map<String, Category> = emptyMap()
+
+  fun load() {
+    db = databaseResource.load()
+    categories = categoriesResource.load()
+  }
+}
 
 val klaxon = Klaxon()
 

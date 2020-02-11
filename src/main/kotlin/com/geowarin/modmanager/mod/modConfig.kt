@@ -9,7 +9,7 @@ data class ModConfig(
   val activeMods: List<String>
 )
 
-fun parseModsConfig(configFolder: String): ModConfig {
+fun parseModsConfig(configFolder: File): ModConfig {
   val modsConfigFile = File(configFolder, "ModsConfig.xml")
   modsConfigFile.konsumeXml().use {
     val konsumer = it.nextElement(Names.of("ModsConfigData"), true)!!

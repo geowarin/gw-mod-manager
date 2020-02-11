@@ -1,44 +1,85 @@
 package com.geowarin.modmanager.mod
 
 import com.geowarin.modmanager.Category
+import com.geowarin.modmanager.Paths
+import com.geowarin.modmanager.Rwms
 import java.io.File
+import java.net.URI
+import java.util.*
 
 data class Mod(
-  val baseDir: File = File(""),
   val cleanModName: String,
-  val metaData: ModMetaData = ModMetaData(),
-  val category: Category = Category(999.0, "Unknown")
+  val status: ModStatus = ModStatus.UNKNOWN,
+  val baseDir: File? = null,
+  val metaData: ModMetaData? = null,
+  val category: Category? = null
 ) {
-  val categoryName
-    get() = category.fullName
+  val categoryName: String
+    get() = category?.fullName ?: "Unknown"
 
-  val priority
-    get() = category.prority
+  val priority: Double
+    get() = category?.prority ?: 999.0
 
-  val steamId
-    get() = baseDir.name
+  val steamId: String?
+    get() = baseDir?.name
 
-  val imageURI
-    get() = File(baseDir, "About/Preview.png").toURI()
+  val imageURI: URI?
+    get() {
+      val preview = File(baseDir, "About/Preview.png")
+      if (preview.exists())
+        return preview.toURI()
+      return null
+    }
+
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other !is Mod)
+      return false
+    return baseDir == other.baseDir
+  }
+
+  override fun hashCode() = Objects.hashCode(baseDir)
+}
+
+enum class ModStatus {
+  ADDED_TO_MODLIST,
+  REMOVED_DROM_MODLIST,
+  INACTIVE,
+  ACTIVE,
+  UNKNOWN
+}
+
+fun loadSteamMods(rwms: Rwms): List<Mod> {
+  return loadMods(Paths.steamModsFolder, rwms.db, rwms.categories)
+}
+
+fun loadLocalMods(rwms: Rwms): List<Mod> {
+  return loadMods(Paths.localModsFolder, rwms.db, rwms.categories)
 }
 
 fun loadMods(
-  modsDir: String,
+  modsDir: File,
   db: Map<String, Any?> = mapOf(),
   categories: Map<String, Category>
 ): List<Mod> {
-  val modDirs = File(modsDir).listFiles()?.toList() ?: emptyList()
-  return modDirs.mapNotNull { baseDir: File ->
+  val modDirs = modsDir.listFiles()?.toList() ?: emptyList()
+  val mods = modDirs.mapNotNull { baseDir: File ->
     val metadata = parseMetadata(baseDir)
     if (metadata == null)
       null
     else {
       val cleanModName = cleanModName(metadata.name)
       val categoryTag = db[cleanModName] as String? ?: "unknown"
-      val category = categories[categoryTag] ?: Category(999.0, "Unknown")
-      Mod(baseDir, cleanModName, metadata, category)
+      val category = categories[categoryTag] ?: Category(999.0, "Not found")
+      Mod(
+        cleanModName = cleanModName,
+        baseDir = baseDir,
+        metaData = metadata,
+        category = category
+      )
     }
   }
+  println("Loaded ${mods.size} mods from ${modsDir.toURI()}")
+  return mods
 }
 
 fun cleanModName(name: String): String {
