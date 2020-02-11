@@ -63,12 +63,15 @@ class ModListFragment : Fragment() {
             this.toggleClass(AppStyle.added, item?.status == ADDED_TO_MODLIST)
           }
         }
+        tableRow.enableDnDReordering(rowIdProvider = Mod::modId)
         tableRow
       }
       bindSelected(modController)
       contextmenu {
         item("Browse on steam").action {
-          selectedItem?.apply { openInBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=${steamId}") }
+          // FIXME: when local, do not show this option
+//          removeWhen { selectedItem?.modType != ModType.STEAM_MOD }
+          selectedItem?.apply { openInBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=${modId}") }
         }
         item("Browse mod url").action {
           selectedItem?.metaData?.apply { openInBrowser(url) }
