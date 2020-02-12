@@ -31,6 +31,7 @@ dependencies {
     implementation("no.tornado:tornadofx:1.7.20"){
         exclude("org.jetbrains.kotlin")
     }
+    implementation("org.redundent:kotlin-xml-builder:1.6.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")

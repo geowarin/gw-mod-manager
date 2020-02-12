@@ -4,13 +4,16 @@ import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.db.Rwms
 import com.geowarin.modmanager.mod.*
 import com.geowarin.modmanager.mod.ModStatus.*
+import org.redundent.kotlin.xml.PrintOptions
+import org.redundent.kotlin.xml.xml
 import tornadofx.*
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
+import java.nio.file.Files
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
-class ModViewModel: ItemViewModel<Mod>() {
+class ModViewModel : ItemViewModel<Mod>() {
   val activeMods = observableListOf<Mod>()
   val inactiveMods = observableListOf<Mod>()
 }
@@ -111,6 +114,29 @@ class ModController : Controller() {
       modViewModel.activeMods.setAll(activeMods)
       modViewModel.inactiveMods.setAll(inactiveMods)
     }
+  }
+
+  fun saveModList(paths: RimworldPaths) {
+    val people = xml("ModsConfigData") {
+      globalProcessingInstruction("xml", "version" to "1.0", "encoding" to "utf-8")
+      "version" {
+        -"1.0.2408 rev749"
+      }
+      "activeMods" {
+        for (activeMod in activeMods) {
+          "li" {
+            -activeMod.modId
+          }
+        }
+      }
+    }
+    Files.newBufferedWriter(paths.configFolder.resolve("ModsConfig.xml")).use {
+      it.write(people.toString(PrintOptions(true, true)))
+    }
+  }
+
+  fun sortMods() {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 }
 

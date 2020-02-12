@@ -39,4 +39,11 @@ class RimworldPaths(val fs: FileSystem = FileSystems.getDefault()) {
       else -> throw Error()
     }
 
+  val rimworldExecutable
+    get() = when {
+      OS.isWindows -> fs.getPath(System.getenv("ProgramFiles(x86)"), "TODO")
+      OS.isMac -> fs.getPath(System.getProperty("user.home"), "Library/ApplicationSupport/Steam/steamapps/common/RimWorld/RimWorldMac.app/Contents/MacOS/RimWorldMac")
+      else -> throw Error()
+    }
+
 }

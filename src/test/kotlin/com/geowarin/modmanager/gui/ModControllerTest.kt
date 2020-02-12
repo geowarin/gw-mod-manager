@@ -7,10 +7,11 @@ import com.geowarin.modmanager.mod.ModStatus
 import com.geowarin.modmanager.utils.getCacheDir
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.testfx.api.FxToolkit
 import java.nio.file.FileSystem
-import kotlin.test.assertEquals
+import java.nio.file.Files
 
 internal class ModControllerTest {
 
@@ -58,6 +59,19 @@ internal class ModControllerTest {
       ),
       modController.activeMods.map { it.cleanModName to it.status }
     )
-//    modController.activateMod()
+    modController.saveModList(rimworldPaths)
+
+    assertEquals(
+      """
+      <?xml version="1.0" encoding="utf-8"?>
+      <ModsConfigData>
+        <version>1.0.2408 rev749</version>
+        <activeMods>
+          <li>818773962</li>
+          <li>Core</li>
+        </activeMods>
+      </ModsConfigData>""".trimIndent(),
+      Files.newBufferedReader(rimworldPaths.configFolder.resolve("ModsConfig.xml")).readText()
+    )
   }
 }

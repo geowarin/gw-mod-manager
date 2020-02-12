@@ -7,6 +7,7 @@ import com.geowarin.modmanager.gui.ModsLoadRequest
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.ADDED_TO_MODLIST
 import javafx.collections.ObservableList
+import javafx.geometry.Pos
 import javafx.scene.control.TableRow
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.BackgroundRepeat
@@ -16,17 +17,41 @@ import javafx.scene.paint.Color.*
 import org.intellij.lang.annotations.Language
 import tornadofx.*
 import java.awt.Desktop
+import java.io.File
 import java.net.URI
 
 class MyApp : App(MyView::class, AppStyle::class)
 
 class ToolbarView : View() {
-  override val root = menubar {
-    menu("File") {
+  val modController: ModController by inject()
+  val rimworldPaths = RimworldPaths()
 
+  override val root = vbox {
+    menubar {
+      menu("File") {
+
+      }
+    }
+    flowpane {
+      paddingAll = 10
+      alignment = Pos.CENTER_RIGHT
+      button("Sort mods").action {
+        modController.sortMods()
+      }
+      button("Refresh").action {
+        modController.loadMods()
+      }
+      button("Save mod list").action {
+        modController.saveModList(rimworldPaths)
+      }
+      button("Run").action {
+//        Desktop.getDesktop().open(rimworldPaths.rimworldExecutable.toFile())
+        Runtime.getRuntime().exec("open steam://run/294100")
+      }
     }
   }
 }
+
 
 typealias ModAction = (Mod) -> Unit
 
