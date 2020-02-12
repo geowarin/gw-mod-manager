@@ -7,11 +7,13 @@ import com.geowarin.modmanager.mod.ModStatus
 import com.geowarin.modmanager.utils.getCacheDir
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.testfx.api.FxToolkit
 import java.nio.file.FileSystem
 import java.nio.file.Files
+import java.nio.file.Path
 
 internal class ModControllerTest {
 
@@ -24,7 +26,9 @@ internal class ModControllerTest {
     val rimworldPaths = RimworldPaths(fs)
     rimworldPaths.localModsFolder.mockWith("/localMods")
     rimworldPaths.steamModsFolder.mockWith("/steamMods")
-    rimworldPaths.configFolder.resolve("ModsConfig.xml").write(
+
+    val modsConfigFile = rimworldPaths.configFolder.resolve("ModsConfig.xml")
+    modsConfigFile.write(
       """
       <ModsConfigData>
         <version>1.0.2408 rev749</version>
@@ -61,8 +65,9 @@ internal class ModControllerTest {
     )
     modController.saveModList(rimworldPaths)
 
-    assertEquals(
-      """
+    assertThat(
+      modsConfigFile.readText()
+    ).isEqualToNormalizingWhitespace("""
       <?xml version="1.0" encoding="utf-8"?>
       <ModsConfigData>
         <version>1.0.2408 rev749</version>
@@ -70,8 +75,16 @@ internal class ModControllerTest {
           <li>818773962</li>
           <li>Core</li>
         </activeMods>
-      </ModsConfigData>""".trimIndent(),
-      Files.newBufferedReader(rimworldPaths.configFolder.resolve("ModsConfig.xml")).readText()
+      </ModsConfigData>"""
+    )
+
+    modController.sortMods()
+    assertEquals(
+      listOf("Core", "HugsLib"),
+      modController.activeMods.map { it.cleanModName }
     )
   }
+
 }
+
+fun Path.readText() = Files.newBufferedReader(this).readText()

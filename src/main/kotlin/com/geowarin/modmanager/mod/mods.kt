@@ -21,14 +21,14 @@ data class Mod(
   val modType: ModType,
   val baseDir: Path = Paths.get("/"),
   val metaData: ModMetaData? = null,
-  val category: Category? = null,
+  val category: Category,
   val manifest: ModManifest? = null
 ) {
   val categoryName: String
-    get() = category?.fullName ?: "Unknown"
+    get() = category.fullName
 
   val priority: Double
-    get() = category?.prority ?: 999.0
+    get() = category.prority
 
   val modId: String
     get() = when (modType) {

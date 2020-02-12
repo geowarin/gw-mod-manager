@@ -136,7 +136,10 @@ class ModController : Controller() {
   }
 
   fun sortMods() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    activeMods.sortBy { it.category.prority }
+    runLater {
+      modViewModel.activeMods.setAll(activeMods)
+    }
   }
 }
 
