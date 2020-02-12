@@ -6,6 +6,7 @@ import com.geowarin.modmanager.gui.ModViewModel
 import com.geowarin.modmanager.gui.ModsLoadRequest
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.ADDED_TO_MODLIST
+import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.control.TableRow
@@ -17,7 +18,6 @@ import javafx.scene.paint.Color.*
 import org.intellij.lang.annotations.Language
 import tornadofx.*
 import java.awt.Desktop
-import java.io.File
 import java.net.URI
 
 class MyApp : App(MyView::class, AppStyle::class)
@@ -45,13 +45,13 @@ class ToolbarView : View() {
         modController.saveModList(rimworldPaths)
       }
       button("Run").action {
-//        Desktop.getDesktop().open(rimworldPaths.rimworldExecutable.toFile())
+        //        Desktop.getDesktop().open(rimworldPaths.rimworldExecutable.toFile())
+//        Runtime.getRuntime().exec("open steam://run/294100//-quicktest")
         Runtime.getRuntime().exec("open steam://run/294100")
       }
     }
   }
 }
-
 
 typealias ModAction = (Mod) -> Unit
 
@@ -59,7 +59,8 @@ class ModListStrategy(
   val title: String,
   val modList: ObservableList<Mod>,
   val modAction: ModAction,
-  val canReorder: Boolean
+  val canReorder: Boolean,
+  val searchProperty: StringProperty
 )
 
 class ModListFragment : Fragment() {
@@ -74,6 +75,7 @@ class ModListFragment : Fragment() {
         paddingRight = 5
       }
       label(modListStrategy.title)
+      textfield(modListStrategy.searchProperty) { }
     }
     val tableview = tableview(modListStrategy.modList) {
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
@@ -193,7 +195,8 @@ class MyView : View("GW Mod manager") {
         title = "Inactive mods",
         modList = modViewModel.inactiveMods,
         modAction = modController::activateMod,
-        canReorder = false
+        canReorder = false,
+        searchProperty = modViewModel.inactiveSearchTerm
       )
     )
   )
@@ -203,7 +206,8 @@ class MyView : View("GW Mod manager") {
         title = "Active mods",
         modList = modViewModel.activeMods,
         modAction = modController::deactivateMod,
-        canReorder = true
+        canReorder = true,
+        searchProperty = modViewModel.activeSearchTerm
       )
     )
   )

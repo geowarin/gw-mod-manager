@@ -4,6 +4,7 @@ import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.db.Rwms
 import com.geowarin.modmanager.mod.*
 import com.geowarin.modmanager.mod.ModStatus.*
+import javafx.beans.property.SimpleStringProperty
 import org.redundent.kotlin.xml.PrintOptions
 import org.redundent.kotlin.xml.xml
 import tornadofx.*
@@ -14,8 +15,21 @@ import java.nio.file.Files
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
 class ModViewModel : ItemViewModel<Mod>() {
-  val activeMods = observableListOf<Mod>()
-  val inactiveMods = observableListOf<Mod>()
+  val activeSearchTerm = SimpleStringProperty()
+  val inactiveSearchTerm = SimpleStringProperty()
+  val activeMods = SortedFilteredList<Mod>()
+  val inactiveMods = SortedFilteredList<Mod>()
+
+  init {
+    activeMods.setAllPassThrough = true
+    inactiveMods.setAllPassThrough = true
+    activeMods.filterWhen(activeSearchTerm) { search, mod ->
+      search.isNullOrEmpty() || mod.modName.toLowerCase().contains(search.toLowerCase())
+    }
+    inactiveMods.filterWhen(inactiveSearchTerm) { search, mod ->
+      search.isNullOrEmpty() || mod.modName.toLowerCase().contains(search.toLowerCase())
+    }
+  }
 }
 
 fun <T> MutableCollection<T>.setAll(items: Collection<T>) {
