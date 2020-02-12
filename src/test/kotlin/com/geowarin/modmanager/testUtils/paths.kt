@@ -22,3 +22,5 @@ fun Path.mockWith(resource: String) {
     }
   }
 }
+
+fun Path.readText() = Files.newBufferedReader(this).readText()

@@ -32,15 +32,10 @@ class ModViewModel : ItemViewModel<Mod>() {
   }
 }
 
-fun <T> MutableCollection<T>.setAll(items: Collection<T>) {
-  this.clear()
-  this += items
-}
-
 class ModController : Controller() {
   val activeMods = mutableListOf<Mod>()
   val inactiveMods = mutableListOf<Mod>()
-  val originalMods = mutableListOf<String>()
+  lateinit var modsConfig: ModsConfig
 
   val modViewModel: ModViewModel by inject()
 
@@ -53,7 +48,6 @@ class ModController : Controller() {
   fun loadMods(fs: FileSystem = FileSystems.getDefault()) {
     activeMods.clear()
     inactiveMods.clear()
-    originalMods.clear()
 
     val rimworldPaths = RimworldPaths(fs)
 
@@ -64,8 +58,7 @@ class ModController : Controller() {
     val localMods = loadLocalMods(rwms, rimworldPaths)
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
-    val modsConfig = parseModsConfig(rimworldPaths.configFolder)
-    originalMods += modsConfig.activeMods
+    modsConfig = parseModsConfig(rimworldPaths.configFolder)
 
     activeMods += modsConfig.activeMods.map { activeModId ->
       allMods.find { it.modId == activeModId }?.copy(status = ACTIVE) ?: modOnlyInConfig(activeModId)
@@ -106,22 +99,10 @@ class ModController : Controller() {
     }
   }
 
-  private fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
-    val originalIndex = originalMods.indexOf(mod.modId)
-    val newIndex = activeMods.filter { it.status != ADDED_TO_MODLIST }.indexOfFirst { it.modId == mod.modId }
-    val newStatus = when {
-      originalIndex == -1 -> ADDED_TO_MODLIST
-      originalIndex == newIndex -> ACTIVE
-      originalIndex > newIndex -> ACTIVE_MOVED_UP
-      else -> ACTIVE_MOVED_DOWN
-    }
-    return mod.copy(status = newStatus)
-  }
-
   fun deactivateMod(mod: Mod) {
     activeMods -= mod
 
-    val newStatus = if (originalMods.contains(mod.modId)) REMOVED_FROM_MODLIST else INACTIVE
+    val newStatus = if (modsConfig.activeMods.contains(mod.modId)) REMOVED_FROM_MODLIST else INACTIVE
     inactiveMods += mod.copy(status = newStatus)
 
     runLater {
@@ -131,29 +112,29 @@ class ModController : Controller() {
   }
 
   fun saveModList(paths: RimworldPaths) {
-    val people = xml("ModsConfigData") {
-      globalProcessingInstruction("xml", "version" to "1.0", "encoding" to "utf-8")
-      "version" {
-        -"1.0.2408 rev749"
-      }
-      "activeMods" {
-        for (activeMod in activeMods) {
-          "li" {
-            -activeMod.modId
-          }
-        }
-      }
-    }
-    Files.newBufferedWriter(paths.configFolder.resolve("ModsConfig.xml")).use {
-      it.write(people.toString(PrintOptions(true, true)))
-    }
+    modsConfig.copy(activeMods = activeMods.map { it.modId })
+      .save(paths)
   }
 
   fun sortMods() {
-    activeMods.sortBy { it.category.prority }
+    val sortedMods = activeMods.sortedBy { it.category.prority }
+    activeMods.clear()
+    activeMods += sortedMods.map { recomputeModStatus(it, sortedMods) }
     runLater {
       modViewModel.activeMods.setAll(activeMods)
     }
+  }
+
+  private fun recomputeModStatus(mod: Mod, activeMods: List<Mod>): Mod {
+    val originalIndex = modsConfig.activeMods.indexOf(mod.modId)
+    val newIndex = activeMods.filter { it.status != ADDED_TO_MODLIST }.indexOfFirst { it.modId == mod.modId }
+    val newStatus = when {
+      originalIndex == -1 -> ADDED_TO_MODLIST
+      originalIndex == newIndex -> ACTIVE
+      originalIndex > newIndex -> ACTIVE_MOVED_UP
+      else -> ACTIVE_MOVED_DOWN
+    }
+    return mod.copy(status = newStatus)
   }
 }
 

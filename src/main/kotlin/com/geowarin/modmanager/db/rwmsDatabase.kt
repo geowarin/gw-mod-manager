@@ -5,7 +5,6 @@ import com.geowarin.modmanager.utils.exists
 import com.geowarin.modmanager.utils.getCacheDir
 import com.geowarin.modmanager.utils.toURI
 import java.io.Reader
-import java.net.URI
 import java.net.URL
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -22,13 +21,15 @@ val databaseResource = CachedResource(
 val categoriesResource = CachedResource(
   url = "https://api.bitbucket.org/2.0/repositories/shakeyourbunny/rwmsdb/src/master/rwms_db_categories.json",
   fileName = "categories.json",
+  override = "categories-override.json",
   loader = ::categoriesLoader
 )
 
 data class CachedResource<T>(
   val url: String,
   val fileName: String,
-  val loader: (Reader) -> T
+  val loader: (Reader) -> T,
+  val override: String? = null
 )
 
 data class Category(
@@ -50,12 +51,10 @@ val klaxon = Klaxon()
 
 fun categoriesLoader(reader: Reader): Map<String, Category> {
   val data = klaxon.parseJsonObject(reader)
-  val categoriesByTag = data.mapValues {
+  return data.mapValues {
     val array = data.array<Any>(it.key)!!
     Category(array[0] as Double, array[1] as String)
-  }.toMutableMap()
-  categoriesByTag["unknown"] = Category(999.0, "Unknown")
-  return categoriesByTag
+  }
 }
 
 fun dbLoader(reader: Reader): Map<String, String> {

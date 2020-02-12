@@ -91,7 +91,7 @@ fun loadMods(
       val manifest = parseManifest(baseDir)
       val cleanModName = cleanModName(metadata.name)
       val categoryTag = db[cleanModName] as String? ?: "unknown"
-      val category = categories[categoryTag] ?: Category(999.0, "Not found")
+      val category = categories[categoryTag] ?: Category(999.0, "Unknown")
       Mod(
         modName = metadata.name,
         cleanModName = cleanModName,

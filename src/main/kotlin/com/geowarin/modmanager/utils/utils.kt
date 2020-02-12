@@ -9,14 +9,14 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 
-private fun getCacheHome(fs: FileSystem): Path {
-  val xdgCache: String = System.getenv("XDG_CACHE_HOME")
-    ?: return fs.getPath(System.getProperty("user.home"), ".cache")
-  return fs.getPath(xdgCache)
+fun getCacheDir(fs: FileSystem = FileSystems.getDefault()): Path {
+  return fs.getPath(System.getenv("XDG_CACHE_HOME")).resolve("gw-mod-manager")
+    ?: fs.getPath(System.getProperty("user.home"), "gw-mod-manager", "cache")
 }
 
-fun getCacheDir(fs: FileSystem = FileSystems.getDefault()): Path {
-  return getCacheHome(fs).resolve("gw-mod-manager")
+fun getConfigDir(fs: FileSystem = FileSystems.getDefault()): Path {
+  return fs.getPath(System.getenv("XDG_CONFIG_HOME")).resolve("gw-mod-manager")
+    ?: fs.getPath(System.getProperty("user.home"), "gw-mod-manager", "config")
 }
 
 fun Path.toURI(): URI = this.toUri()
