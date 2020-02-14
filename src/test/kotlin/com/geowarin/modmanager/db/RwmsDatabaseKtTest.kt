@@ -1,14 +1,12 @@
 package com.geowarin.modmanager.db
 
-import com.geowarin.modmanager.testUtils.mockWith
+import com.geowarin.modmanager.ModLoaderPaths
 import com.geowarin.modmanager.testUtils.write
-import com.geowarin.modmanager.utils.getCacheDir
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs.newFileSystem
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.nio.file.FileSystem
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 
 internal class RwmsDatabaseKtTest {
@@ -16,7 +14,7 @@ internal class RwmsDatabaseKtTest {
   @Test
   fun `load database and categories from cache`() {
     val fs: FileSystem = newFileSystem(Configuration.osX())
-    getCacheDir(fs).resolve("rwmsdb.json").write(
+    ModLoaderPaths(fs).rwmsCache.write(
       """
       {
         "db": {
@@ -25,7 +23,7 @@ internal class RwmsDatabaseKtTest {
       }
     """.trimIndent()
     )
-    getCacheDir(fs).resolve("categories.json").write(
+    ModLoaderPaths(fs).categoriesCache.write(
       """
       {
         "core": [
@@ -37,20 +35,9 @@ internal class RwmsDatabaseKtTest {
     )
 
     val rwms = Rwms(fs)
-    rwms.load()
 
-    assertEquals(
-      "core",
-      rwms.db["Core"]
-    )
-    assertEquals(
-      "Core",
-      rwms.categories["core"]?.fullName
-    )
-    assertEquals(
-      42.0,
-      rwms.categories["core"]?.prority
-    )
+    assertThat(rwms.getModCategory("Core"))
+      .isEqualTo(Category(prority = 42.0, fullName = "Core"))
   }
 }
 

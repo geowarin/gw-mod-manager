@@ -1,16 +1,19 @@
 package com.geowarin.modmanager.gui
 
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Klaxon
 import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.db.Rwms
 import com.geowarin.modmanager.mod.*
 import com.geowarin.modmanager.mod.ModStatus.*
+import com.geowarin.modmanager.mod.ModType.LOCAL_MOD
+import com.geowarin.modmanager.mod.ModType.STEAM_MOD
 import javafx.beans.property.SimpleStringProperty
-import org.redundent.kotlin.xml.PrintOptions
-import org.redundent.kotlin.xml.xml
 import tornadofx.*
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 
 object ModsLoadRequest : FXEvent(EventBus.RunOn.BackgroundThread)
 
@@ -52,10 +55,9 @@ class ModController : Controller() {
     val rimworldPaths = RimworldPaths(fs)
 
     val rwms = Rwms(fs)
-    rwms.load()
 
-    val steamMods = loadSteamMods(rwms, rimworldPaths)
-    val localMods = loadLocalMods(rwms, rimworldPaths)
+    val steamMods = doLoadMods(STEAM_MOD, rimworldPaths, rwms)
+    val localMods = doLoadMods(LOCAL_MOD, rimworldPaths, rwms)
     val allMods = (steamMods + localMods).sortedBy { it.priority }
 
     modsConfig = parseModsConfig(rimworldPaths.configFolder)

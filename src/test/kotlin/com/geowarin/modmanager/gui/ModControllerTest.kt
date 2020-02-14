@@ -1,10 +1,12 @@
 package com.geowarin.modmanager.gui
 
+import com.geowarin.modmanager.ModLoaderPaths
 import com.geowarin.modmanager.RimworldPaths
+import com.geowarin.modmanager.getCacheDir
 import com.geowarin.modmanager.mod.ModStatus
 import com.geowarin.modmanager.mod.ModsConfig
 import com.geowarin.modmanager.testUtils.mockWith
-import com.geowarin.modmanager.utils.getCacheDir
+import com.geowarin.modmanager.testUtils.write
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import org.assertj.core.api.Assertions.assertThat
@@ -80,6 +82,29 @@ internal class ModControllerTest {
         "HugsLib" to ModStatus.ACTIVE_MOVED_UP,
         "Core" to ModStatus.ACTIVE_MOVED_DOWN
       )
+  }
+
+  @Test
+  fun `override mod category`() {
+    val (fs, rimworldPaths) = mockPaths(
+      ModsConfig(
+        rimworldVersion = "1.0.2408 rev749",
+        activeMods = listOf("Core", hugsLibId)
+      )
+    )
+    ModLoaderPaths(fs).dbOverrides
+      .write("""
+        {
+          "HugsLib": "joy"
+        }
+      """.trimIndent())
+
+    val modController = ModController()
+    modController.loadMods(fs)
+
+    val hugsLib = modController.activeMods.first { it.modId == hugsLibId }
+    assertThat(hugsLib.category.fullName)
+      .isEqualTo("joy items")
   }
 
   private fun mockPaths(modsConfig: ModsConfig): Pair<FileSystem, RimworldPaths> {

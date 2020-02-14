@@ -68,30 +68,23 @@ enum class ModType {
   LOCAL_MOD
 }
 
-fun loadSteamMods(rwms: Rwms, paths: RimworldPaths): List<Mod> {
-  return loadMods(paths.steamModsFolder, STEAM_MOD, rwms.db, rwms.categories)
-}
-
-fun loadLocalMods(rwms: Rwms, paths: RimworldPaths): List<Mod> {
-  return loadMods(paths.localModsFolder, LOCAL_MOD, rwms.db, rwms.categories)
-}
-
-fun loadMods(
-  modsDir: Path,
+fun doLoadMods(
   modType: ModType,
-  db: Map<String, Any?> = mapOf(),
-  categories: Map<String, Category>
+  paths: RimworldPaths,
+  rwms: Rwms
 ): List<Mod> {
-  val modDirs = Files.list(modsDir).toList()
-  val mods = modDirs.mapNotNull { baseDir ->
+  val modsFolder = when (modType) {
+    STEAM_MOD -> paths.steamModsFolder
+    LOCAL_MOD -> paths.localModsFolder
+  }
+  val mods = modsFolder.list().mapNotNull { baseDir ->
     val metadata = parseMetadata(baseDir)
     if (metadata == null)
       null
     else {
       val manifest = parseManifest(baseDir)
       val cleanModName = cleanModName(metadata.name)
-      val categoryTag = db[cleanModName] as String? ?: "unknown"
-      val category = categories[categoryTag] ?: Category(999.0, "Unknown")
+      val category = rwms.getModCategory(cleanModName)
       Mod(
         modName = metadata.name,
         cleanModName = cleanModName,
@@ -103,11 +96,15 @@ fun loadMods(
       )
     }
   }
-  println("Loaded ${mods.size} mods from ${modsDir.toUri()}")
+  println("Loaded ${mods.size} mods from ${modsFolder.toUri()}")
   return mods
 }
 
-fun modOnlyInConfig(modId: String): Mod {
+fun Path.list(): List<Path> {
+  return Files.list(this).toList()
+}
+
+internal fun modOnlyInConfig(modId: String): Mod {
   return Mod(
     modName = modId,
     status = ModStatus.ACTIVE,
