@@ -6,6 +6,7 @@ import com.geowarin.modmanager.gui.ModViewModel
 import com.geowarin.modmanager.gui.ModsLoadRequest
 import com.geowarin.modmanager.mod.Mod
 import com.geowarin.modmanager.mod.ModStatus.ADDED_TO_MODLIST
+import com.geowarin.modmanager.mod.ModType
 import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
@@ -47,7 +48,8 @@ class ToolbarView : View() {
       button("Run").action {
         //        Desktop.getDesktop().open(rimworldPaths.rimworldExecutable.toFile())
 //        Runtime.getRuntime().exec("open steam://run/294100//-quicktest")
-        Runtime.getRuntime().exec("open steam://run/294100")
+        Runtime.getRuntime().exec(arrayOf("open", "steam://run/294100//-save"))
+//        Runtime.getRuntime().exec("open steam://run/294100")
       }
     }
   }
@@ -78,13 +80,26 @@ class ModListFragment : Fragment() {
       textfield(modListStrategy.searchProperty) { }
     }
     val tableview = tableview(modListStrategy.modList) {
+      readonlyColumn("", Mod::modType).fixedWidth(28).cellFormat {modType ->
+        val url = when (modType) {
+          ModType.LOCAL_MOD -> "/icons/user-blue-home-icon.png"
+          ModType.STEAM_MOD -> "/icons/folder-blue-steam-icon.png"
+        }
+        graphic = cache {
+          imageview(javaClass.getResource(url).toString()) {
+            fitHeight = 22.0
+            fitWidth = 22.0
+            alignment = Pos.CENTER
+          }
+        }
+      }
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
-      readonlyColumn("Category", Mod::categoryName).weightedWidth(20, minContentWidth = true).cellFormat { priority ->
+      readonlyColumn("Category", Mod::categoryName).weightedWidth(20).cellFormat { priority ->
         text = priority
         style { textFill = if (priority == "Unknown") RED else BLACK }
       }
-      readonlyColumn("Priority", Mod::priority).weightedWidth(10, minContentWidth = true)
-      readonlyColumn("Status", Mod::status).weightedWidth(10, minContentWidth = true)
+      readonlyColumn("Priority", Mod::priority).weightedWidth(10)
+      readonlyColumn("Status", Mod::status).weightedWidth(10)
 
       setRowFactory {
         val tableRow = object : TableRow<Mod>() {

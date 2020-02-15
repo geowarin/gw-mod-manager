@@ -46,6 +46,8 @@ class RimworldPaths(val fs: FileSystem = FileSystems.getDefault()) {
       else -> throw Error()
     }
 
+  // /Users/geowarin/Library/Application Support/RimWorld/Saves
+
   val rimworldExecutable
     get() = when {
       OS.isWindows -> fs.getPath(System.getenv("ProgramFiles(x86)"), "TODO")
