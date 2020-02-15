@@ -28,7 +28,7 @@ class RimworldPaths(val fs: FileSystem = FileSystems.getDefault()) {
 
   val configFolder
     get() = when {
-      OS.isWindows -> fs.getPath(System.getenv("APPDATA"), "../LocalLow/Ludeon\\ Studios/RimWorld\\ by\\ Ludeon\\ Studios/Config")
+      OS.isWindows -> fs.getPath(System.getenv("APPDATA"), "../LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config")
       OS.isMac -> fs.getPath(System.getProperty("user.home"), "Library/ApplicationSupport/RimWorld/Config")
       else -> throw Error()
     }
@@ -61,11 +61,13 @@ class RimworldPaths(val fs: FileSystem = FileSystems.getDefault()) {
 }
 
 internal fun getCacheDir(fs: FileSystem = FileSystems.getDefault()): Path {
-  return fs.getPath(System.getenv("XDG_CACHE_HOME")).resolve("gw-mod-manager")
+  return getEnvPath(fs, "XDG_CACHE_HOME")?.resolve("gw-mod-manager")
     ?: fs.getPath(System.getProperty("user.home"), "gw-mod-manager", "cache")
 }
 
+private fun getEnvPath(fs: FileSystem, name: String): Path? = System.getenv(name)?.let { fs.getPath(it) }
+
 private fun getConfigDir(fs: FileSystem = FileSystems.getDefault()): Path {
-  return fs.getPath(System.getenv("XDG_CONFIG_HOME")).resolve("gw-mod-manager")
+  return getEnvPath(fs,"XDG_CONFIG_HOME")?.resolve("gw-mod-manager")
     ?: fs.getPath(System.getProperty("user.home"), "gw-mod-manager", "config")
 }
