@@ -80,7 +80,7 @@ class ModListFragment : Fragment() {
       textfield(modListStrategy.searchProperty) { }
     }
     val tableview = tableview(modListStrategy.modList) {
-      readonlyColumn("", Mod::modType).fixedWidth(28).cellFormat {modType ->
+      readonlyColumn("", Mod::modType).fixedWidth(28).cellFormat { modType ->
         val url = when (modType) {
           ModType.LOCAL_MOD -> "/icons/user-blue-home-icon.png"
           ModType.STEAM_MOD -> "/icons/folder-blue-steam-icon.png"
@@ -92,6 +92,10 @@ class ModListFragment : Fragment() {
             alignment = Pos.CENTER
           }
         }
+      }
+      readonlyColumn("Multiplayer", Mod::multiplayerCompat).weightedWidth(weight = 20).cellFormat { compat ->
+        text = compat.level.toString()
+        tooltip(compat.comment)
       }
       readonlyColumn("Name", Mod::cleanModName).weightedWidth(weight = 70, minContentWidth = true)
       readonlyColumn("Category", Mod::categoryName).weightedWidth(20).cellFormat { priority ->

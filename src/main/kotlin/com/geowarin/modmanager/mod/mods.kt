@@ -22,7 +22,8 @@ data class Mod(
   val baseDir: Path = Paths.get("/"),
   val metaData: ModMetaData? = null,
   val category: Category,
-  val manifest: ModManifest? = null
+  val manifest: ModManifest? = null,
+  val multiplayerCompat: MultiplayerCompat
 ) {
   val categoryName: String
     get() = category.fullName
@@ -68,6 +69,23 @@ enum class ModType {
   LOCAL_MOD
 }
 
+data class MultiplayerCompat(
+  val level: MultiplayerCompatLevel = MultiplayerCompatLevel.UNKNOWN,
+  val comment: String = ""
+)
+
+enum class MultiplayerCompatLevel(val i: Int) {
+  UNKNOWN(0),
+  DOES_NOT_WORK(1),
+  WORKS_BAD(2),
+  WORKS_REASONABLY(3),
+  WORKS(4);
+
+  companion object {
+    fun fromInt(i: Int) = values().first { it.i == i }
+  }
+}
+
 fun doLoadMods(
   modType: ModType,
   paths: RimworldPaths,
@@ -85,6 +103,7 @@ fun doLoadMods(
       val manifest = parseManifest(baseDir)
       val cleanModName = cleanModName(metadata.name)
       val category = rwms.getModCategory(cleanModName)
+      val multiplayerCompat = rwms.getMultiplayerCompat(baseDir.fileName.toString())
       Mod(
         modName = metadata.name,
         cleanModName = cleanModName,
@@ -92,7 +111,8 @@ fun doLoadMods(
         metaData = metadata,
         category = category,
         modType = modType,
-        manifest = manifest
+        manifest = manifest,
+        multiplayerCompat = multiplayerCompat
       )
     }
   }
@@ -109,7 +129,8 @@ internal fun modOnlyInConfig(modId: String): Mod {
     modName = modId,
     status = ModStatus.ACTIVE,
     modType = LOCAL_MOD,
-    category = Category(999.0, "Not found")
+    category = Category(999.0, "Not found"),
+    multiplayerCompat = MultiplayerCompat()
   )
 }
 

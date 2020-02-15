@@ -5,6 +5,8 @@ import com.geowarin.modmanager.RimworldPaths
 import com.geowarin.modmanager.getCacheDir
 import com.geowarin.modmanager.mod.ModStatus
 import com.geowarin.modmanager.mod.ModsConfig
+import com.geowarin.modmanager.mod.MultiplayerCompat
+import com.geowarin.modmanager.mod.MultiplayerCompatLevel
 import com.geowarin.modmanager.testUtils.mockWith
 import com.geowarin.modmanager.testUtils.write
 import com.google.common.jimfs.Configuration
@@ -41,7 +43,11 @@ internal class ModControllerTest {
     assertThat(modController.activeMods.map { it.cleanModName })
       .containsExactly("Core", "HugsLib")
     assertThat(modController.inactiveMods.map { it.cleanModName })
-      .containsExactly("Prepare Landing")
+      .containsExactly("Prepare Landing", "Allow Tool")
+
+    val (prepareLanding, allowTools) = modController.inactiveMods
+    assertThat(prepareLanding.multiplayerCompat).isEqualTo(MultiplayerCompat(MultiplayerCompatLevel.WORKS, ""))
+    assertThat(allowTools.multiplayerCompat).isEqualTo(MultiplayerCompat(MultiplayerCompatLevel.DOES_NOT_WORK, "Forbid, unforbid, select similar, haul urgently and finish off doesn't work."))
   }
 
   @Test

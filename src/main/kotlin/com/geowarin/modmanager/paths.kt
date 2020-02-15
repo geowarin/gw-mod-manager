@@ -14,7 +14,8 @@ object OS {
 class ModLoaderPaths(fs: FileSystem = FileSystems.getDefault()) {
   val dbOverrides = getConfigDir(fs).resolve("database-overrides.json")
   val rwmsCache = getCacheDir(fs).resolve("rwmsdb.json")
-  val categoriesCache = getCacheDir(  fs).resolve("categories.json")
+  val categoriesCache = getCacheDir(fs).resolve("categories.json")
+  val multiplayerCompat = getCacheDir(fs).resolve("multiplayerCompat.csv")
 }
 
 class RimworldPaths(val fs: FileSystem = FileSystems.getDefault()) {

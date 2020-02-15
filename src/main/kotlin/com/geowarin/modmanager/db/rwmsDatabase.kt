@@ -3,7 +3,12 @@ package com.geowarin.modmanager.db
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
 import com.geowarin.modmanager.ModLoaderPaths
-import com.geowarin.modmanager.utils.*
+import com.geowarin.modmanager.mod.MultiplayerCompat
+import com.geowarin.modmanager.mod.MultiplayerCompatLevel
+import com.geowarin.modmanager.utils.exists
+import com.geowarin.modmanager.utils.parseJson
+import com.geowarin.modmanager.utils.toURI
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import java.io.Reader
 import java.net.URL
 import java.nio.file.FileSystem
@@ -25,6 +30,21 @@ val categoriesResource = CachedResource(
   loader = ::categoriesLoader
 )
 
+val multiplayerCompatResource = CachedResource(
+  url = "https://docs.google.com/spreadsheets/d/1jaDxV8F7bcz4E9zeIRmZGKuaX7d0kvWWq28aKckISaY/export?format=csv&id=1jaDxV8F7bcz4E9zeIRmZGKuaX7d0kvWWq28aKckISaY&gid=0",
+  fileName = ModLoaderPaths::multiplayerCompat,
+  loader = ::multiplayerCompatLoader
+)
+
+fun multiplayerCompatLoader(reader: Reader): Map<String, MultiplayerCompat> {
+  return csvReader().readAll(reader.readText()).drop(2).map { cells ->
+    val compatLevel = MultiplayerCompatLevel.fromInt(cells[0].toInt())
+    val modId = cells[2]
+    val comment = cells[5]
+    modId to MultiplayerCompat(compatLevel, comment)
+  }.toMap()
+}
+
 data class CachedResource<T>(
   val url: String,
   val fileName: KProperty1<ModLoaderPaths, Path>,
@@ -39,6 +59,7 @@ data class Category(
 class Rwms(fs: FileSystem = FileSystems.getDefault()) {
   private val db: Map<String, String> = databaseResource.load(fs)
   private val categories: Map<String, Category> = categoriesResource.load(fs)
+  private val multiplayerCompat: Map<String, MultiplayerCompat> = multiplayerCompatResource.load(fs)
   private val databaseOverride = loadDbOverrides(fs)
 
   fun getModCategory(cleanModName: String): Category {
@@ -52,6 +73,10 @@ class Rwms(fs: FileSystem = FileSystems.getDefault()) {
       dbOverrides.exists() -> dbOverrides.parseJson()
       else -> JsonObject()
     }
+  }
+
+  fun getMultiplayerCompat(modId: String): MultiplayerCompat {
+    return multiplayerCompat[modId] ?: MultiplayerCompat()
   }
 }
 
