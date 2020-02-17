@@ -30,7 +30,7 @@ internal class ModControllerTest {
 
   @Test
   fun `load mods`() {
-    val (fs, rimworldPaths) = mockPaths(
+    val fs = mockPaths(
       ModsConfig(
         rimworldVersion = "1.0.2408 rev749",
         activeMods = listOf("Core", hugsLibId)
@@ -52,7 +52,7 @@ internal class ModControllerTest {
 
   @Test
   fun `sort mods`() {
-    val (fs, rimworldPaths) = mockPaths(
+    val fs = mockPaths(
       ModsConfig(
         rimworldVersion = "1.0.2408 rev749",
         activeMods = listOf(hugsLibId, "Core")
@@ -70,7 +70,7 @@ internal class ModControllerTest {
 
   @Test
   fun `reorder mods`() {
-    val (fs, rimworldPaths) = mockPaths(
+    val fs = mockPaths(
       ModsConfig(
         rimworldVersion = "1.0.2408 rev749",
         activeMods = listOf("Core", hugsLibId)
@@ -92,7 +92,7 @@ internal class ModControllerTest {
 
   @Test
   fun `override mod category`() {
-    val (fs, rimworldPaths) = mockPaths(
+    val fs = mockPaths(
       ModsConfig(
         rimworldVersion = "1.0.2408 rev749",
         activeMods = listOf("Core", hugsLibId)
@@ -113,8 +113,8 @@ internal class ModControllerTest {
       .isEqualTo("joy items")
   }
 
-  private fun mockPaths(modsConfig: ModsConfig): Pair<FileSystem, RimworldPaths> {
-    val fs: FileSystem = Jimfs.newFileSystem(Configuration.osX())
+  private fun mockPaths(modsConfig: ModsConfig): FileSystem {
+    val fs: FileSystem = Jimfs.newFileSystem(Configuration.forCurrentPlatform())
     getCacheDir(fs).mockWith("/cache")
     val rimworldPaths = RimworldPaths(fs)
     rimworldPaths.localModsFolder.mockWith("/localMods")
@@ -122,7 +122,7 @@ internal class ModControllerTest {
 
     Files.createDirectories(rimworldPaths.configFolder)
     modsConfig.save(rimworldPaths)
-    return Pair(fs, rimworldPaths)
+    return fs
   }
 
 }
